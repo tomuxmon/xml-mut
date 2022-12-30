@@ -1,5 +1,5 @@
 #[cfg(test)]
-use super::*;
+use super::prelude::*;
 
 #[test]
 fn parse_node_selector_path1() {
