@@ -2,6 +2,7 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, tag_no_case, take_till},
     character::complete::{alpha1, alphanumeric1, digit1, multispace1},
+    combinator::opt,
     multi::separated_list1,
     IResult,
 };
@@ -12,7 +13,7 @@ pub struct ValueSelector {
     pub ending: ValueSelectorEnding,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ValueSelectorEnding {
     AttributeName(String),
     NodeText,
@@ -33,16 +34,14 @@ pub struct WhereClause {
 pub fn value_selector_ending(s: &str) -> IResult<&str, ValueSelectorEnding> {
     // p@name or v@>text
     let (s, _) = tag("@")(s)?;
-    let (s, value) = alt((alphanumeric1, tag(">text")))(s)?;
-    
-    Ok((
-        s,
-        if value == ">text" {
-            ValueSelectorEnding::NodeText
-        } else {
-            ValueSelectorEnding::AttributeName(value.to_string())
-        },
-    ))
+    let (s, text_tag) = opt(tag(">text"))(s)?;
+
+    Ok(if text_tag.is_some() {
+        (s, ValueSelectorEnding::NodeText)
+    } else {
+        let (s, attr_name) = take_till(|c: char| !c.is_alphanumeric())(s)?;
+        (s, ValueSelectorEnding::AttributeName(attr_name.to_string()))
+    })
 }
 
 pub fn value_selector(s: &str) -> IResult<&str, ValueSelector> {
