@@ -27,14 +27,14 @@ pub enum Predicate {
 
 #[derive(Debug)]
 pub struct PredicateNodeExists {
-    exists_word: String,
-    node_path: Vec<String>,
+    pub exists_word: String,
+    pub node_path: Vec<String>,
 }
 
 #[derive(Debug)]
 pub struct PredicateEquals {
-    left_side: ValueSelector,
-    right_side: String,
+    pub left_side: ValueSelector,
+    pub right_side: String,
 }
 
 #[derive(Debug)]
