@@ -21,8 +21,20 @@ pub enum ValueSelectorEnding {
 
 #[derive(Debug)]
 pub enum Predicate {
-    NodeExists(Vec<String>),
-    ValueEquals(ValueSelector, String),
+    NodeExists(PredicateNodeExists),
+    Equals(PredicateEquals),
+}
+
+#[derive(Debug)]
+pub struct PredicateNodeExists {
+    exists_word: String,
+    node_path: Vec<String>,
+}
+
+#[derive(Debug)]
+pub struct PredicateEquals {
+    left_side: ValueSelector,
+    right_side: String,
 }
 
 #[derive(Debug)]
@@ -55,4 +67,44 @@ pub fn value_selector(s: &str) -> IResult<&str, ValueSelector> {
             ending,
         },
     ))
+}
+
+pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateNodeExists> {
+    let (s, exists_word) = tag_no_case("exists")(s)?;
+    let (s, _) = multispace1(s)?;
+    let (s, node_path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
+
+    Ok((
+        s,
+        PredicateNodeExists {
+            exists_word: exists_word.to_string(),
+            node_path: node_path.iter().map(|p| p.to_string()).collect(),
+        },
+    ))
+}
+
+pub fn predicate_equals(s: &str) -> IResult<&str, PredicateEquals> {
+    let (s, left_side) = value_selector(s)?;
+    let (s, _) = multispace1(s)?;
+    let (s, _) = tag("==")(s)?;
+    let (s, _) = multispace1(s)?;
+    let (s, right_side) = take_till(|c: char| !c.is_alphanumeric())(s)?;
+
+    Ok((
+        s,
+        PredicateEquals {
+            left_side,
+            right_side: right_side.to_string(),
+        },
+    ))
+}
+
+pub fn predicate(s: &str) -> IResult<&str, Predicate> {
+    let (s, maybe_p_node_exists) = opt(predicate_node_exists)(s)?;
+    Ok(if let Some(p_node_exists) = maybe_p_node_exists {
+        (s, Predicate::NodeExists(p_node_exists))
+    } else {
+        let (s, p_equals) = predicate_equals(s)?;
+        (s, Predicate::Equals(p_equals))
+    })
 }
