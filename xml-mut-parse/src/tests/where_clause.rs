@@ -92,3 +92,19 @@ fn parse_predicate_2() {
         panic!("could not parse predicate node exists");
     }
 }
+
+#[test]
+fn parse_where_clause_1() {
+    let fragment = "where exists r/tron and exists morka and r/tron@morka == baranka";
+    let (_, w) = where_clause(fragment).expect("could not parse where clause");
+    assert_eq!(w.where_word, "where".to_string());
+    assert_eq!(w.predicates.len(), 3);
+}
+
+#[test]
+fn parse_where_clause_2() {
+    let fragment = "WhErE r/tron@morka == baranka";
+    let (_, w) = where_clause(fragment).expect("could not parse where clause");
+    assert_eq!(w.where_word, "WhErE".to_string());
+    assert_eq!(w.predicates.len(), 1);
+}
