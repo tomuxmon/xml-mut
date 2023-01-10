@@ -1,22 +1,10 @@
+use crate::prelude::*;
 use nom::{
     bytes::complete::{tag, tag_no_case, take_till},
     character::complete::multispace1,
     multi::separated_list1,
     IResult,
 };
-
-#[derive(Debug)]
-pub struct NodeSelector {
-    pub path: Vec<String>,
-    pub as_word: String,
-    pub alias: String,
-}
-
-#[derive(Debug)]
-pub struct GetStatement {
-    pub get_word: String,
-    pub node_selector: NodeSelector,
-}
 
 pub fn node_selector(s: &str) -> IResult<&str, NodeSelector> {
     let (s, path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;

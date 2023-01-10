@@ -1,3 +1,4 @@
+use crate::prelude::*;
 use nom::{
     bytes::complete::{tag, tag_no_case, take_till},
     character::complete::multispace1,
@@ -5,42 +6,6 @@ use nom::{
     multi::separated_list1,
     IResult,
 };
-
-#[derive(Debug)]
-pub struct ValueSelector {
-    pub node_path: Vec<String>,
-    pub ending: ValueSelectorEnding,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum ValueSelectorEnding {
-    AttributeName(String),
-    NodeText,
-}
-
-#[derive(Debug)]
-pub enum Predicate {
-    NodeExists(PredicateNodeExists),
-    Equals(PredicateEquals),
-}
-
-#[derive(Debug)]
-pub struct PredicateNodeExists {
-    pub exists_word: String,
-    pub node_path: Vec<String>,
-}
-
-#[derive(Debug)]
-pub struct PredicateEquals {
-    pub left_side: ValueSelector,
-    pub right_side: String,
-}
-
-#[derive(Debug)]
-pub struct WhereClause {
-    pub where_word: String,
-    pub predicates: Vec<Predicate>,
-}
 
 pub fn value_selector_ending(s: &str) -> IResult<&str, ValueSelectorEnding> {
     // p@name or v@>text
