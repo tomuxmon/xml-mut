@@ -11,13 +11,13 @@ pub struct GetStatement {
     pub node_selector: NodeSelector,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ValueVariant {
     Selector(ValueSelector),
     LiteralString(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ValueSelector {
     pub node_path: Vec<String>,
     pub ending: ValueSelectorEnding,

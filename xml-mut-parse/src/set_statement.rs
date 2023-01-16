@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use nom::{
     bytes::complete::{tag_no_case, take_till},
-    character::complete::{char, multispace1},
+    character::complete::{char, multispace1, multispace0},
     combinator::opt,
     multi::separated_list1,
     sequence::delimited,
@@ -38,8 +38,8 @@ pub fn value_assignment(s: &str) -> IResult<&str, ValueAssignment> {
     ))
 }
 
-fn comma_surounded_mulispace1(s: &str) -> IResult<&str, &str> {
-    let (s, _) = multispace1(s)?;
+fn comma_surounded_mulispace01(s: &str) -> IResult<&str, &str> {
+    let (s, _) = multispace0(s)?;
     let (s, and_word) = tag_no_case(",")(s)?;
     let (s, _) = multispace1(s)?;
 
@@ -49,7 +49,7 @@ fn comma_surounded_mulispace1(s: &str) -> IResult<&str, &str> {
 pub fn set_statement(s: &str) -> IResult<&str, SetStatement> {
     let (s, set_word) = tag_no_case("set")(s)?;
     let (s, _) = multispace1(s)?;
-    let (s, assignments) = separated_list1(comma_surounded_mulispace1, value_assignment)(s)?;
+    let (s, assignments) = separated_list1(comma_surounded_mulispace01, value_assignment)(s)?;
     Ok((
         s,
         SetStatement {
