@@ -29,19 +29,19 @@ pub enum ValueSelectorEnding {
     NodeText,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Predicate {
     NodeExists(PredicateNodeExists),
     Equals(PredicateEquals),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct PredicateNodeExists {
     pub exists_word: String,
     pub node_path: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct PredicateEquals {
     pub left_side: ValueSelector,
     pub right_side: String,
@@ -69,11 +69,19 @@ pub struct SetStatement {
 
 // TODO: expect multiple node paths or value selectors in delete statrement
 
-// TODO: non desttructive parse of delete statement node path or value selector 
+// TODO: non desttructive parse of delete statement node path or value selector
 // (if not value selector just use node path)
 
 #[derive(Debug)]
 pub struct DeleteStatement {
     pub delete_word: String,
     pub node_path: Vec<String>,
+}
+
+#[derive(Debug)]
+pub struct Mutation {
+    pub get: GetStatement,
+    pub where_clause: WhereClause,
+    pub set: Option<SetStatement>,
+    pub delete: Option<DeleteStatement>,
 }
