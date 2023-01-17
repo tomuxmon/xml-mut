@@ -64,3 +64,16 @@ pub struct SetStatement {
     pub set_word: String,
     pub assignments: Vec<ValueAssignment>,
 }
+
+// TODO: extract Vec<String> as NodePath struct
+
+// TODO: expect multiple node paths or value selectors in delete statrement
+
+// TODO: non desttructive parse of delete statement node path or value selector 
+// (if not value selector just use node path)
+
+#[derive(Debug)]
+pub struct DeleteStatement {
+    pub delete_word: String,
+    pub node_path: Vec<String>,
+}
