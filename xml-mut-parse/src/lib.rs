@@ -6,7 +6,7 @@ mod structure;
 mod tests;
 mod where_clause;
 
-mod prelude {
+pub mod prelude {
     pub use super::delete_statement::*;
     pub use super::get_statement::*;
     pub use super::mutation::*;
