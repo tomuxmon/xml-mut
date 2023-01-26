@@ -14,8 +14,8 @@ pub fn delete_statement(s: &str) -> IResult<&str, DeleteStatement> {
     Ok((
         s,
         DeleteStatement {
-            delete_word: delete_word.to_string(),
-            node_path: node_path.iter().map(|p| p.to_string()).collect(),
+            delete_word,
+            node_path,
         },
     ))
 }

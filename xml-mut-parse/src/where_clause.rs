@@ -1,3 +1,4 @@
+
 use crate::prelude::*;
 use nom::{
     bytes::complete::{tag, tag_no_case, take_till},
@@ -16,18 +17,19 @@ pub fn value_selector_ending(s: &str) -> IResult<&str, ValueSelectorEnding> {
         (s, ValueSelectorEnding::NodeText)
     } else {
         let (s, attr_name) = take_till(|c: char| !c.is_alphanumeric())(s)?;
-        (s, ValueSelectorEnding::AttributeName(attr_name.to_string()))
+        (s, ValueSelectorEnding::AttributeName(attr_name))
     })
 }
 
 pub fn value_selector(s: &str) -> IResult<&str, ValueSelector> {
-    let (s, path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
+    let (s, node_path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
     let (s, ending) = value_selector_ending(s)?;
 
+   
     Ok((
         s,
         ValueSelector {
-            node_path: path.iter().map(|p| p.to_string()).collect(),
+            node_path,
             ending,
         },
     ))
@@ -41,8 +43,8 @@ pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateNodeExists> {
     Ok((
         s,
         PredicateNodeExists {
-            exists_word: exists_word.to_string(),
-            node_path: node_path.iter().map(|p| p.to_string()).collect(),
+            exists_word,
+            node_path,
         },
     ))
 }
@@ -58,7 +60,7 @@ pub fn predicate_equals(s: &str) -> IResult<&str, PredicateEquals> {
         s,
         PredicateEquals {
             left_side,
-            right_side: right_side.to_string(),
+            right_side,
         },
     ))
 }
@@ -90,7 +92,7 @@ pub fn where_clause(s: &str) -> IResult<&str, WhereClause> {
     Ok((
         s,
         WhereClause {
-            where_word: where_word.to_string(),
+            where_word,
             predicates,
         },
     ))

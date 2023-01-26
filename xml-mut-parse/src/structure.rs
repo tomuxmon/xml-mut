@@ -1,68 +1,68 @@
 #[derive(Debug)]
-pub struct NodeSelector {
-    pub path: Vec<String>,
-    pub as_word: String,
-    pub alias: String,
+pub struct NodeSelector<'a> {
+    pub path: Vec<&'a str>,
+    pub as_word: &'a str,
+    pub alias: &'a str,
 }
 
 #[derive(Debug)]
-pub struct GetStatement {
-    pub get_word: String,
-    pub node_selector: NodeSelector,
+pub struct GetStatement<'a> {
+    pub get_word: &'a str,
+    pub node_selector: NodeSelector<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum ValueVariant {
-    Selector(ValueSelector),
-    LiteralString(String),
+pub enum ValueVariant<'a> {
+    Selector(ValueSelector<'a>),
+    LiteralString(&'a str),
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct ValueSelector {
-    pub node_path: Vec<String>,
-    pub ending: ValueSelectorEnding,
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct ValueSelector<'a> {
+    pub node_path: Vec<&'a str>,
+    pub ending: ValueSelectorEnding<'a>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum ValueSelectorEnding {
-    AttributeName(String),
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum ValueSelectorEnding<'a> {
+    AttributeName(&'a str),
     NodeText,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub enum Predicate {
-    NodeExists(PredicateNodeExists),
-    Equals(PredicateEquals),
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum Predicate<'a> {
+    NodeExists(PredicateNodeExists<'a>),
+    Equals(PredicateEquals<'a>),
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct PredicateNodeExists {
-    pub exists_word: String,
-    pub node_path: Vec<String>,
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct PredicateNodeExists<'a> {
+    pub exists_word: &'a str,
+    pub node_path: Vec<&'a str>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct PredicateEquals {
-    pub left_side: ValueSelector,
-    pub right_side: String,
-}
-
-#[derive(Debug)]
-pub struct WhereClause {
-    pub where_word: String,
-    pub predicates: Vec<Predicate>,
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct PredicateEquals<'a> {
+    pub left_side: ValueSelector<'a>,
+    pub right_side: &'a str,
 }
 
 #[derive(Debug)]
-pub struct ValueAssignment {
-    pub left_side: ValueSelector,
-    pub right_side: ValueVariant,
+pub struct WhereClause<'a> {
+    pub where_word: &'a str,
+    pub predicates: Vec<Predicate<'a>>,
 }
 
 #[derive(Debug)]
-pub struct SetStatement {
-    pub set_word: String,
-    pub assignments: Vec<ValueAssignment>,
+pub struct ValueAssignment<'a> {
+    pub left_side: ValueSelector<'a>,
+    pub right_side: ValueVariant<'a>,
+}
+
+#[derive(Debug)]
+pub struct SetStatement<'a> {
+    pub set_word: &'a str,
+    pub assignments: Vec<ValueAssignment<'a>>,
 }
 
 // TODO: extract Vec<String> as NodePath struct
@@ -73,15 +73,15 @@ pub struct SetStatement {
 // (if not value selector just use node path)
 
 #[derive(Debug)]
-pub struct DeleteStatement {
-    pub delete_word: String,
-    pub node_path: Vec<String>,
+pub struct DeleteStatement<'a> {
+    pub delete_word: &'a str,
+    pub node_path: Vec<&'a str>,
 }
 
 #[derive(Debug)]
-pub struct Mutation {
-    pub get: GetStatement,
-    pub where_clause: WhereClause,
-    pub set: Option<SetStatement>,
-    pub delete: Option<DeleteStatement>,
+pub struct Mutation<'a> {
+    pub get: GetStatement<'a>,
+    pub where_clause: WhereClause<'a>,
+    pub set: Option<SetStatement<'a>>,
+    pub delete: Option<DeleteStatement<'a>>,
 }

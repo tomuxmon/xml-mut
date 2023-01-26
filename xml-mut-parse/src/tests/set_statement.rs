@@ -23,14 +23,14 @@ fn parse_value_assignment_1() {
     let (_, b) = value_assignment(fragment).expect("could not parse value assignment");
     assert_eq!(
         b.left_side.ending,
-        ValueSelectorEnding::AttributeName("morka".to_string())
+        ValueSelectorEnding::AttributeName("morka")
     );
     assert_eq!(b.left_side.node_path.len(), 2);
     assert_eq!(b.left_side.node_path[0], "r");
     assert_eq!(b.left_side.node_path[1], "tron");
     assert_eq!(
         b.right_side,
-        ValueVariant::LiteralString("true".to_string())
+        ValueVariant::LiteralString("true")
     );
 }
 
@@ -40,7 +40,7 @@ fn parse_value_assignment_2() {
     let (_, b) = value_assignment(fragment).expect("could not parse value assignment");
     assert_eq!(
         b.left_side.ending,
-        ValueSelectorEnding::AttributeName("morka".to_string())
+        ValueSelectorEnding::AttributeName("morka")
     );
     assert_eq!(b.left_side.node_path.len(), 2);
     assert_eq!(b.left_side.node_path[0], "r");

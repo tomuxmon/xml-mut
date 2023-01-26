@@ -8,20 +8,20 @@ set p@version = p/version@>text
 delete p/version"###;
 
     let (_, w) = mutation(fragment).expect("could not parse mutation");
-    assert_eq!(w.get.get_word, "get".to_string());
-    assert_eq!(w.get.node_selector.alias, "p".to_string());
+    assert_eq!(w.get.get_word, "get");
+    assert_eq!(w.get.node_selector.alias, "p");
     assert_eq!(w.get.node_selector.path.len(), 2);
-    assert_eq!(w.get.node_selector.path[0], "ItemGroup".to_string());
-    assert_eq!(w.get.node_selector.path[1], "PackageRef".to_string());
-    assert_eq!(w.get.node_selector.as_word, "as".to_string());
+    assert_eq!(w.get.node_selector.path[0], "ItemGroup");
+    assert_eq!(w.get.node_selector.path[1], "PackageRef");
+    assert_eq!(w.get.node_selector.as_word, "as");
 
-    assert_eq!(w.where_clause.where_word, "where".to_string());
+    assert_eq!(w.where_clause.where_word, "where");
     assert_eq!(w.where_clause.predicates.len(), 1);
     assert_eq!(
         w.where_clause.predicates[0],
         Predicate::NodeExists(PredicateNodeExists {
-            exists_word: "exists".to_string(),
-            node_path: vec!["p".to_string(), "version".to_string()]
+            exists_word: "exists",
+            node_path: vec!["p", "version"]
         })
     );
     assert!(w.set.is_some());

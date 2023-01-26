@@ -16,9 +16,9 @@ pub fn node_selector(s: &str) -> IResult<&str, NodeSelector> {
     Ok((
         s,
         NodeSelector {
-            path: path.iter().map(|p| p.to_string()).collect(),
-            as_word: as_word.to_string(),
-            alias: alias.to_string(),
+            path,
+            as_word,
+            alias,
         },
     ))
 }
@@ -31,7 +31,7 @@ pub fn get_statement(s: &str) -> IResult<&str, GetStatement> {
     Ok((
         s,
         (GetStatement {
-            get_word: get_word.to_string(),
+            get_word,
             node_selector,
         }),
     ))

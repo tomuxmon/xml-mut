@@ -1,16 +1,16 @@
 use crate::prelude::*;
 use nom::{
     bytes::complete::{tag_no_case, take_till},
-    character::complete::{char, multispace1, multispace0},
+    character::complete::{char, multispace0, multispace1},
     combinator::opt,
     multi::separated_list1,
     sequence::delimited,
     IResult,
 };
 
-pub fn literal_quoted_string(s: &str) -> IResult<&str, String> {
+pub fn literal_quoted_string(s: &str) -> IResult<&str, &str> {
     let (s, res) = delimited(char('\"'), take_till(|c| c == '\"'), char('\"'))(s)?;
-    Ok((s, res.to_string()))
+    Ok((s, res))
 }
 
 pub fn value_variant(s: &str) -> IResult<&str, ValueVariant> {
@@ -53,7 +53,7 @@ pub fn set_statement(s: &str) -> IResult<&str, SetStatement> {
     Ok((
         s,
         SetStatement {
-            set_word: set_word.to_string(),
+            set_word,
             assignments,
         },
     ))
