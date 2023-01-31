@@ -12,12 +12,12 @@ delete p/version"###;
 
     let xml = r###"<ItemGroup>
 
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
-        <version>3.3.3</version>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="sus">
+        <version>3.3.a</version>
     </PackageReference>
 
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
-    <version>3.3.3</version>
+        <Version>3.3.b</Version>
     </PackageReference>
 
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0" />
@@ -37,6 +37,24 @@ delete p/version"###;
             )
     }) {
         println!("{:?}", node.tag_name());
+        // TODO: perform node update, set operation
+        if let Some(set_op) = mutation.set.clone() {
+            for asg in set_op.assignments.into_iter() {
+                let left_side_val =
+                    node.get_value(&asg.left_side, mutation.get.node_selector.alias);
+
+                let right_side_val = match asg.right_side {
+                    ValueVariant::Selector(selector) => {
+                        node.get_value(&selector, mutation.get.node_selector.alias)
+                    }
+                    ValueVariant::LiteralString(val) => Some(val.to_string()),
+                };
+                println!("{:?}", left_side_val);
+                println!("{:?}", right_side_val);
+            }
+        }
+
+        // TODO: perform node removal, delete operation
     }
 
     println!("Hello, world!");
@@ -55,8 +73,8 @@ pub trait Searchable<'a, 'input> {
         }
     }
     fn fits_predicate_exists(&self, predicate: &PredicateNodeExists, alias: &str) -> bool {
-        if let Some((path_start, node_path)) = predicate.node_path.split_first() {
-            if alias == *path_start {
+        if let Some((&path_start, node_path)) = predicate.node_path.split_first() {
+            if alias.to_lowercase() == path_start.to_lowercase() {
                 self.has_child_element_path(node_path)
             } else {
                 false
@@ -70,14 +88,18 @@ pub trait Searchable<'a, 'input> {
             .map(|val| val == predicate.right_side)
             .unwrap_or(false)
     }
-    fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<&str>;
-    fn get_child_element(&self, node_path: &[&str]) -> Option<Box<Self>>;
+    fn is_element_with_name(&self, name: &str) -> bool;
+    fn get_attribute_with_name(&self, name: &str) -> Option<Attribute>;
+    fn get_ending_value(&self, ending: &SelectorEnding) -> Option<String>;
+    fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String>;
+    fn find_first_child_element(&self, node_path: &[&str]) -> Option<Box<Self>>;
 }
 
 impl<'a, 'input: 'a> Searchable<'a, 'input> for Node<'a, 'input> {
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool {
+        // TODO: rewrite using simple loop (no recursion)
         if let Some((last, node_path_remaining)) = node_path.split_last() {
-            if self.is_element() && self.has_tag_name(*last) {
+            if self.is_element_with_name(last) {
                 if let Some(parent) = self.parent_element() {
                     parent.has_parent_elemnt_path(node_path_remaining)
                 } else {
@@ -96,34 +118,54 @@ impl<'a, 'input: 'a> Searchable<'a, 'input> for Node<'a, 'input> {
     fn has_child_element_path(&self, node_path: &[&str]) -> bool {
         if let Some((first, node_path_remaining)) = node_path.split_first() {
             self.children().into_iter().any(|n| {
-                n.is_element()
-                    && n.has_tag_name(*first)
-                    && n.has_child_element_path(node_path_remaining)
+                n.is_element_with_name(first) && n.has_child_element_path(node_path_remaining)
             })
         } else {
             true
         }
     }
+    fn is_element_with_name(&self, name: &str) -> bool {
+        self.is_element() && self.tag_name().name().to_lowercase() == name.to_lowercase()
+    }
 
-    fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<&str> {
+    fn get_attribute_with_name(&self, name: &str) -> Option<Attribute> {
+        self.attributes()
+            .find(|a| a.name().to_lowercase() == name.to_lowercase())
+    }
+
+    fn get_ending_value(&self, ending: &SelectorEnding) -> Option<String> {
+        match ending {
+            SelectorEnding::AttributeName(name) => self
+                .get_attribute_with_name(name)
+                .map(|a| a.value().to_string()),
+            SelectorEnding::NodeText => self.text().map(|t| t.to_string()),
+        }
+    }
+
+    fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String> {
         // selector.node_path should yield only a single element?
         // select first found for now.
-        if let Some(child_node) = self.get_child_element(&selector.node_path) {
-            match selector.ending {
-                SelectorEnding::AttributeName(name) => child_node.attribute(name),
-                SelectorEnding::NodeText => child_node.text(),
+        if let Some((&path_start, node_path)) = selector.node_path.split_first() {
+            if alias.to_lowercase() == path_start.to_lowercase() {
+                if let Some(child_node) = self.find_first_child_element(node_path) {
+                    child_node.get_ending_value(&selector.ending)
+                } else {
+                    None
+                }
+            } else {
+                None
             }
         } else {
             None
         }
     }
 
-    fn get_child_element(&self, node_path: &[&str]) -> Option<Box<Self>> {
+    fn find_first_child_element(&self, node_path: &[&str]) -> Option<Box<Self>> {
         let mut current_node = Box::new(*self);
         for &name in node_path {
             if let Some(child_node) = current_node
                 .children()
-                .find(|n| n.is_element() && n.has_tag_name(name))
+                .find(|n| n.is_element_with_name(name))
             {
                 current_node = Box::new(child_node);
             } else {

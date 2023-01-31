@@ -11,7 +11,7 @@ pub struct GetStatement<'a> {
     pub node_selector: NodeSelector<'a>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum ValueVariant<'a> {
     Selector(ValueSelector<'a>),
     LiteralString(&'a str),
@@ -53,13 +53,13 @@ pub struct WhereClause<'a> {
     pub predicates: Vec<Predicate<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ValueAssignment<'a> {
     pub left_side: ValueSelector<'a>,
     pub right_side: ValueVariant<'a>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SetStatement<'a> {
     pub set_word: &'a str,
     pub assignments: Vec<ValueAssignment<'a>>,
