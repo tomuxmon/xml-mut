@@ -2,9 +2,17 @@ use crate::prelude::*;
 
 #[test]
 fn parse_value_selector_path1() {
+
+    // TODO: value selector could also include descendant node index to pick:
+    // zomb[0]/tron[0]@>text
+    // TODO: using value selector with no index should result in error when 
+    // more than one descendant is found
+    // tron@>text -> error when more then one tron sub node exists
+    // OR "tron@>text" should be considered equivalent to "tron[0]@>text"
+
     let fragment = "žomb/tronš@>text";
     let (_, b) = value_selector(fragment).expect("could not parse value selector");
-    assert_eq!(b.ending, ValueSelectorEnding::NodeText);
+    assert_eq!(b.ending, SelectorEnding::NodeText);
     assert_eq!(b.node_path.len(), 2);
     assert_eq!(b.node_path[0], "žomb");
     assert_eq!(b.node_path[1], "tronš");
@@ -16,7 +24,7 @@ fn parse_value_selector_path2() {
     let (_, b) = value_selector(fragment).expect("could not parse value selector");
     assert_eq!(
         b.ending,
-        ValueSelectorEnding::AttributeName("morka")
+        SelectorEnding::AttributeName("morka")
     );
     assert_eq!(b.node_path.len(), 2);
     assert_eq!(b.node_path[0], "r");
@@ -28,7 +36,7 @@ fn parse_value_selector_ending_1() {
     let fragment = "@>text";
     let (_, b) =
         value_selector_ending(fragment).expect("could not parse node text value selector ending");
-    assert_eq!(b, ValueSelectorEnding::NodeText);
+    assert_eq!(b, SelectorEnding::NodeText);
 }
 
 #[test]
@@ -36,7 +44,7 @@ fn parse_value_selector_ending_2() {
     let fragment = "@version";
     let (_, b) = value_selector_ending(fragment)
         .expect("could not parse attribute name value selector ending");
-    assert_eq!(b, ValueSelectorEnding::AttributeName("version"));
+    assert_eq!(b, SelectorEnding::AttributeName("version"));
 }
 
 #[test]
@@ -68,7 +76,7 @@ fn parse_predicate_equals_1() {
     assert_eq!(b.left_side.node_path[1], "tron");
     assert_eq!(
         b.left_side.ending,
-        ValueSelectorEnding::AttributeName("morka")
+        SelectorEnding::AttributeName("morka")
     );
     assert_eq!(b.right_side, "baranka");
 }

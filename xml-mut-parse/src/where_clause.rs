@@ -8,16 +8,16 @@ use nom::{
     IResult,
 };
 
-pub fn value_selector_ending(s: &str) -> IResult<&str, ValueSelectorEnding> {
+pub fn value_selector_ending(s: &str) -> IResult<&str, SelectorEnding> {
     // p@name or v@>text
     let (s, _) = tag("@")(s)?;
     let (s, text_tag) = opt(tag(">text"))(s)?;
 
     Ok(if text_tag.is_some() {
-        (s, ValueSelectorEnding::NodeText)
+        (s, SelectorEnding::NodeText)
     } else {
         let (s, attr_name) = take_till(|c: char| !c.is_alphanumeric())(s)?;
-        (s, ValueSelectorEnding::AttributeName(attr_name))
+        (s, SelectorEnding::AttributeName(attr_name))
     })
 }
 

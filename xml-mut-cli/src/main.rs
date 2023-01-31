@@ -42,24 +42,22 @@ delete p/version"###;
     println!("Hello, world!");
 }
 
-pub trait Searchable {
+pub trait Searchable<'a, 'input> {
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool;
     fn has_child_element_path(&self, node_path: &[&str]) -> bool;
     fn fits_predicates(&self, predicates: &[Predicate], alias: &str) -> bool {
-        predicates
-            .iter()
-            .all(|p| self.fits_predicate(p.clone(), alias))
+        predicates.iter().all(|p| self.fits_predicate(p, alias))
     }
-    fn fits_predicate(&self, predicate: Predicate, alias: &str) -> bool {
+    fn fits_predicate(&self, predicate: &Predicate, alias: &str) -> bool {
         match predicate {
             Predicate::NodeExists(p) => self.fits_predicate_exists(p, alias),
             Predicate::Equals(p) => self.fits_predicate_equals(p, alias),
         }
     }
-    fn fits_predicate_exists(&self, predicate: PredicateNodeExists, alias: &str) -> bool {
-        if let Some((path_start, path_up)) = predicate.node_path.split_first() {
+    fn fits_predicate_exists(&self, predicate: &PredicateNodeExists, alias: &str) -> bool {
+        if let Some((path_start, node_path)) = predicate.node_path.split_first() {
             if alias == *path_start {
-                self.has_child_element_path(path_up)
+                self.has_child_element_path(node_path)
             } else {
                 false
             }
@@ -67,10 +65,16 @@ pub trait Searchable {
             false
         }
     }
-    fn fits_predicate_equals(&self, predicate: PredicateEquals, alias: &str) -> bool;
+    fn fits_predicate_equals(&self, predicate: &PredicateEquals, alias: &str) -> bool {
+        self.get_value(&predicate.left_side, alias)
+            .map(|val| val == predicate.right_side)
+            .unwrap_or(false)
+    }
+    fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<&str>;
+    fn get_child_element(&self, node_path: &[&str]) -> Option<Box<Self>>;
 }
 
-impl<'a, 'input: 'a> Searchable for Node<'a, 'input> {
+impl<'a, 'input: 'a> Searchable<'a, 'input> for Node<'a, 'input> {
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool {
         if let Some((last, node_path_remaining)) = node_path.split_last() {
             if self.is_element() && self.has_tag_name(*last) {
@@ -101,8 +105,31 @@ impl<'a, 'input: 'a> Searchable for Node<'a, 'input> {
         }
     }
 
-    fn fits_predicate_equals(&self, predicate: PredicateEquals, alias: &str) -> bool {
-        
-        todo!()
+    fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<&str> {
+        // selector.node_path should yield only a single element?
+        // select first found for now.
+        if let Some(child_node) = self.get_child_element(&selector.node_path) {
+            match selector.ending {
+                SelectorEnding::AttributeName(name) => child_node.attribute(name),
+                SelectorEnding::NodeText => child_node.text(),
+            }
+        } else {
+            None
+        }
+    }
+
+    fn get_child_element(&self, node_path: &[&str]) -> Option<Box<Self>> {
+        let mut current_node = Box::new(*self);
+        for &name in node_path {
+            if let Some(child_node) = current_node
+                .children()
+                .find(|n| n.is_element() && n.has_tag_name(name))
+            {
+                current_node = Box::new(child_node);
+            } else {
+                return None;
+            }
+        }
+        Some(current_node)
     }
 }
