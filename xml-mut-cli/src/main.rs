@@ -36,7 +36,7 @@ delete p/version"###;
                 mutation.get.node_selector.alias,
             )
     }) {
-        println!("{:?}", node.tag_name());
+        println!("found mutatable node: '{:?}'", node.tag_name());
         // TODO: perform node update, set operation
         if let Some(set_op) = mutation.set.clone() {
             for asg in set_op.assignments.into_iter() {
@@ -49,15 +49,26 @@ delete p/version"###;
                     }
                     ValueVariant::LiteralString(val) => Some(val.to_string()),
                 };
-                println!("{:?}", left_side_val);
-                println!("{:?}", right_side_val);
+                println!("left side value: '{:?}'", left_side_val);
+                println!("right side value: '{:?}'", right_side_val);
             }
         }
 
         // TODO: perform node removal, delete operation
+        if let Some(delete_op) = mutation.delete.clone() {
+            if let Some((&path_start, node_path)) = delete_op.node_path.split_first() {
+                if mutation.get.node_selector.alias.to_lowercase() == path_start.to_lowercase() {
+                    if let Some(deletable_node) = node.find_first_child_element(node_path) {
+                        println!("will delete '{:?}'", deletable_node.tag_name());
+                    } else {
+                        println!("found nothing to delete");
+                    }
+                } else {
+                    println!("delete path should start with an alias");
+                }
+            }
+        }
     }
-
-    println!("Hello, world!");
 }
 
 pub trait Searchable<'a, 'input> {

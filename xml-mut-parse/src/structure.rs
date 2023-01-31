@@ -72,7 +72,7 @@ pub struct SetStatement<'a> {
 // TODO: non desttructive parse of delete statement node path or value selector
 // (if not value selector just use node path)
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DeleteStatement<'a> {
     pub delete_word: &'a str,
     pub node_path: Vec<&'a str>,
