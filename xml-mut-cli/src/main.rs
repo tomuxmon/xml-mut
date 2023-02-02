@@ -25,7 +25,7 @@ delete p/version"###;
 </ItemGroup>"###;
 
     let (_, mutation) = mutation(mutation_definition).expect("could not parse mutation");
-    println!("{:?}", mutation);
+    println!("{mutation:?}");
 
     let doc: Document = Document::parse(xml).unwrap();
 
@@ -36,21 +36,55 @@ delete p/version"###;
                 mutation.get.node_selector.alias,
             )
     }) {
-        println!("found mutatable node: '{:?}'", node.tag_name());
+        let pos_start = node.position();
+        let pos_end = node
+            .next_sibling()
+            .map(|n| n.position())
+            .unwrap_or(xml.len());
+
+        let node_text = &xml[pos_start..pos_end];
+        println!("{node_text:?}");
+
+        println!(
+            "found mutatable node: '{:?}', pos start: {:?}, pos end: {:?}",
+            node.tag_name(),
+            pos_start,
+            pos_end
+        );
+
+        // TODO: itterate descendants and reconstruct node text while mutating it
+        for a in node.descendants() {
+            let name = a.tag_name();
+            let text = a.text().unwrap_or("empty");
+            let node_type = a.node_type();
+            println!("type: {node_type:?}; name: {name:?}; text: {text:?}");
+        }
+
         // TODO: perform node update, set operation
         if let Some(set_op) = mutation.set.clone() {
             for asg in set_op.assignments.into_iter() {
+                // node.position()
+                // TODO: method to get element node last attribute possition (or node closing tag position)
+                // TODO: method to construct an attribute with a name and value pair
+                // punch holes in the immutable document and write it
+                // TODO: do not forget you can do Some(ref val)
+                // node.position()
+
+                // TODO: get or construct a target node and value receiver
                 let left_side_val =
                     node.get_value(&asg.left_side, mutation.get.node_selector.alias);
 
+                // TOOD: set nodes value with new value
                 let right_side_val = match asg.right_side {
                     ValueVariant::Selector(selector) => {
                         node.get_value(&selector, mutation.get.node_selector.alias)
                     }
                     ValueVariant::LiteralString(val) => Some(val.to_string()),
                 };
-                println!("left side value: '{:?}'", left_side_val);
-                println!("right side value: '{:?}'", right_side_val);
+                // TODO: write xml
+
+                println!("left side value: '{left_side_val:?}'");
+                println!("right side value: '{right_side_val:?}'");
             }
         }
 
@@ -111,7 +145,7 @@ impl<'a, 'input: 'a> Searchable<'a, 'input> for Node<'a, 'input> {
         // TODO: rewrite using simple loop (no recursion)
         if let Some((last, node_path_remaining)) = node_path.split_last() {
             if self.is_element_with_name(last) {
-                if let Some(parent) = self.parent_element() {
+                if let Some(ref parent) = self.parent_element() {
                     parent.has_parent_elemnt_path(node_path_remaining)
                 } else {
                     node_path_remaining.is_empty()
