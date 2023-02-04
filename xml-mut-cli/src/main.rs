@@ -1,4 +1,5 @@
 use roxmltree::*;
+use std::ops::Range;
 use xml_mut_parse::prelude::*;
 
 fn main() {
@@ -11,17 +12,9 @@ set p@version = p/version@>text
 delete p/version"###;
 
     let xml = r###"<ItemGroup>
-
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="sus">
-        <version>3.3.a</version>
-    </PackageReference>
-
-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
-        <Version>3.3.b</Version>
-    </PackageReference>
-
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0" />
-
+<PackageReference Include="zuzu" Version="sus"> bleep <version>3.0</version> bloop </PackageReference>
+<PackageReference Include="zizi"> <Version>3.0</Version> </PackageReference>
+<PackageReference Include="zohan" Version="4.0" />
 </ItemGroup>"###;
 
     let (_, mutation) = mutation(mutation_definition).expect("could not parse mutation");
@@ -36,28 +29,21 @@ delete p/version"###;
                 mutation.get.node_selector.alias,
             )
     }) {
-        let pos_start = node.position();
-        let pos_end = node
-            .next_sibling()
-            .map(|n| n.position())
-            .unwrap_or(xml.len());
-
-        let node_text = &xml[pos_start..pos_end];
-        println!("{node_text:?}");
+        let bounds = node.get_bounds();
 
         println!(
-            "found mutatable node: '{:?}', pos start: {:?}, pos end: {:?}",
+            "found mutatable node: '{:?}', bounds: {:?}",
             node.tag_name(),
-            pos_start,
-            pos_end
+            bounds
         );
 
         // TODO: itterate descendants and reconstruct node text while mutating it
         for a in node.descendants() {
             let name = a.tag_name();
-            let text = a.text().unwrap_or("empty");
+            let text = a.get_input_text();
+            let bounds = a.get_bounds();
             let node_type = a.node_type();
-            println!("type: {node_type:?}; name: {name:?}; text: {text:?}");
+            println!(" {node_type:?} ({bounds:?}); name: {name:?}; full text: {text:?};");
         }
 
         // TODO: perform node update, set operation
@@ -106,6 +92,8 @@ delete p/version"###;
 }
 
 pub trait Searchable<'a, 'input> {
+    fn get_bounds(&self) -> Range<usize>;
+    fn get_input_text(&self) -> &str;
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool;
     fn has_child_element_path(&self, node_path: &[&str]) -> bool;
     fn fits_predicates(&self, predicates: &[Predicate], alias: &str) -> bool {
@@ -141,8 +129,27 @@ pub trait Searchable<'a, 'input> {
 }
 
 impl<'a, 'input: 'a> Searchable<'a, 'input> for Node<'a, 'input> {
+    fn get_bounds(&self) -> Range<usize> {
+        let pos_start = self.position();
+        let pos_end = match self.node_type() {
+            NodeType::Text => self.position() + self.text().map_or(0, |t| t.len()),
+            _ => self.next_sibling().map(|n| n.position()).unwrap_or(
+                self.document()
+                    .get_node(NodeId::new(self.id().get() + 1))
+                    .map(|s| s.position())
+                    .unwrap_or(self.document().input_text().len()),
+            ),
+        };
+        pos_start..pos_end
+    }
+
+    fn get_input_text(&self) -> &str {
+        &self.document().input_text()[self.get_bounds()]
+    }
+
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool {
         // TODO: rewrite using simple loop (no recursion)
+        // TODO: use node.ancestors() and zip!
         if let Some((last, node_path_remaining)) = node_path.split_last() {
             if self.is_element_with_name(last) {
                 if let Some(ref parent) = self.parent_element() {
