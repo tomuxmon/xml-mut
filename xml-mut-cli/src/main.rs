@@ -29,70 +29,44 @@ delete p/version"###;
                 mutation.get.node_selector.alias,
             )
     }) {
-        let bounds = node.get_bounds();
-
-        println!(
-            "found mutatable node: '{:?}', bounds: {:?}",
-            node.tag_name(),
-            bounds
-        );
-
-        // TODO: itterate descendants and reconstruct node text while mutating it
-        for a in node.descendants() {
-            let name = a.tag_name();
-            let text = a.get_input_text();
-            let bounds = a.get_bounds();
-            let node_type = a.node_type();
-            println!(" {node_type:?} ({bounds:?}); name: {name:?}; full text: {text:?};");
-        }
+        debug_node(&node);
 
         // TODO: perform node update, set operation
-        if let Some(set_op) = mutation.set.clone() {
-            for asg in set_op.assignments.into_iter() {
-                // node.position()
-                // TODO: method to get element node last attribute possition (or node closing tag position)
-                // TODO: method to construct an attribute with a name and value pair
-                // punch holes in the immutable document and write it
-                // TODO: do not forget you can do Some(ref val)
-                // node.position()
+        let replacers = node.get_mutation_replaces(&mutation);
 
-                // TODO: get or construct a target node and value receiver
-                let left_side_val =
-                    node.get_value(&asg.left_side, mutation.get.node_selector.alias);
-
-                // TOOD: set nodes value with new value
-                let right_side_val = match asg.right_side {
-                    ValueVariant::Selector(selector) => {
-                        node.get_value(&selector, mutation.get.node_selector.alias)
-                    }
-                    ValueVariant::LiteralString(val) => Some(val.to_string()),
-                };
-                // TODO: write xml
-
-                println!("left side value: '{left_side_val:?}'");
-                println!("right side value: '{right_side_val:?}'");
-            }
-        }
-
-        // TODO: perform node removal, delete operation
-        if let Some(delete_op) = mutation.delete.clone() {
-            if let Some((&path_start, node_path)) = delete_op.node_path.split_first() {
-                if mutation.get.node_selector.alias.to_lowercase() == path_start.to_lowercase() {
-                    if let Some(deletable_node) = node.find_first_child_element(node_path) {
-                        println!("will delete '{:?}'", deletable_node.tag_name());
-                    } else {
-                        println!("found nothing to delete");
-                    }
-                } else {
-                    println!("delete path should start with an alias");
-                }
-            }
+        for replacer in replacers {
+            let aa = &doc.input_text()[replacer.bounds];
+            println!(
+                " original text: '{aa}' will be replaced with '{}'",
+                replacer.replacement
+            );
         }
     }
 }
 
-pub trait Searchable<'a, 'input> {
+fn debug_node(node: &Node) {
+    let bounds = node.get_bounds();
+
+    println!(
+        "found mutatable node: '{:?}', bounds: {:?}",
+        node.tag_name(),
+        bounds
+    );
+
+    // TODO: itterate descendants and reconstruct node text while mutating it
+    for a in node.descendants() {
+        let name = a.tag_name();
+        let text = a.get_input_text();
+        let bounds = a.get_bounds();
+        let node_type = a.node_type();
+        println!(" {node_type:?} ({bounds:?}); name: {name:?}; full text: {text:?};");
+    }
+}
+
+pub trait Searchable {
     fn get_bounds(&self) -> Range<usize>;
+    fn get_value_bounds(&self, selector: &ValueSelector, alias: &str) -> Option<Range<usize>>;
+    fn get_ending_value_bounds(&self, ending: &SelectorEnding) -> Option<Range<usize>>;
     fn get_input_text(&self) -> &str;
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool;
     fn has_child_element_path(&self, node_path: &[&str]) -> bool;
@@ -124,11 +98,12 @@ pub trait Searchable<'a, 'input> {
     fn is_element_with_name(&self, name: &str) -> bool;
     fn get_attribute_with_name(&self, name: &str) -> Option<Attribute>;
     fn get_ending_value(&self, ending: &SelectorEnding) -> Option<String>;
+
     fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String>;
     fn find_first_child_element(&self, node_path: &[&str]) -> Option<Box<Self>>;
 }
 
-impl<'a, 'input: 'a> Searchable<'a, 'input> for Node<'a, 'input> {
+impl<'a, 'input: 'a> Searchable for Node<'a, 'input> {
     fn get_bounds(&self) -> Range<usize> {
         let pos_start = self.position();
         let pos_end = match self.node_type() {
@@ -185,12 +160,39 @@ impl<'a, 'input: 'a> Searchable<'a, 'input> for Node<'a, 'input> {
             .find(|a| a.name().to_lowercase() == name.to_lowercase())
     }
 
+    fn get_ending_value_bounds(&self, ending: &SelectorEnding) -> Option<Range<usize>> {
+        match ending {
+            SelectorEnding::AttributeName(name) => self.get_attribute_with_name(name).map(|a| {
+                a.position() + a.name().len() + 2
+                    ..a.position() + a.name().len() + a.value().len() + 2
+            }),
+            SelectorEnding::NodeText => Some(self.get_bounds()), // TODO: should get bounds of first child text node
+        }
+    }
+
     fn get_ending_value(&self, ending: &SelectorEnding) -> Option<String> {
+        // TODO: String -> &'a str
         match ending {
             SelectorEnding::AttributeName(name) => self
                 .get_attribute_with_name(name)
                 .map(|a| a.value().to_string()),
             SelectorEnding::NodeText => self.text().map(|t| t.to_string()),
+        }
+    }
+
+    fn get_value_bounds(&self, selector: &ValueSelector, alias: &str) -> Option<Range<usize>> {
+        if let Some((&path_start, node_path)) = selector.node_path.split_first() {
+            if alias.to_lowercase() == path_start.to_lowercase() {
+                if let Some(child_node) = self.find_first_child_element(node_path) {
+                    child_node.get_ending_value_bounds(&selector.ending)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
         }
     }
 
@@ -225,5 +227,79 @@ impl<'a, 'input: 'a> Searchable<'a, 'input> for Node<'a, 'input> {
             }
         }
         Some(current_node)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Replacer {
+    // TODO: String -> &'a str
+    pub bounds: Range<usize>,
+    pub replacement: String,
+}
+
+pub enum ReplaceError {
+    OverlappingReplacer(Replacer, Replacer),
+    InvalidGeneratedXml(String),
+}
+
+pub trait Mutable {
+    // TODO: method to get element node last attribute possition (or node closing tag position)
+    // TODO: method to construct an attribute with a name and value pair
+    fn get_mutation_replaces(&self, mutation: &Mutation) -> Vec<Replacer>;
+    fn apply(&self, replacers: &[Replacer]) -> Result<Box<Self>, ReplaceError>;
+}
+
+impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
+    fn get_mutation_replaces(&self, mutation: &Mutation) -> Vec<Replacer> {
+        let mut replacers: Vec<Replacer> = vec![];
+        if let Some(set_op) = mutation.set.clone() {
+            for asg in set_op.assignments.into_iter() {
+                if let Some(bounds) =
+                    self.get_value_bounds(&asg.left_side, mutation.get.node_selector.alias)
+                {
+                    if let Some(replacement) = match asg.right_side {
+                        ValueVariant::Selector(selector) => {
+                            self.get_value(&selector, mutation.get.node_selector.alias)
+                        }
+                        ValueVariant::LiteralString(val) => Some(val.to_string()),
+                    } {
+                        replacers.push(Replacer {
+                            bounds,
+                            replacement,
+                        });
+                    }
+                }
+            }
+        }
+
+        if let Some(delete_op) = mutation.delete.clone() {
+            if let Some((&path_start, node_path)) = delete_op.node_path.split_first() {
+                if mutation.get.node_selector.alias.to_lowercase() == path_start.to_lowercase() {
+                    if let Some(deletable_node) = self.find_first_child_element(node_path) {
+                        replacers.push(Replacer {
+                            bounds: deletable_node.get_bounds(),
+                            replacement: "".to_string(),
+                        });
+                    } else {
+                        println!("found nothing to delete");
+                    }
+                } else {
+                    println!("delete path should start with an alias");
+                }
+            }
+        }
+
+        // TOOD: self closing element replacer when empty node
+
+        replacers
+    }
+
+    fn apply(&self, replacers: &[Replacer]) -> Result<Box<Self>, ReplaceError> {
+        // TODO: validate replacer overlaps
+        // TODO: reconstruct node with replacers applied
+        // TODO: reparse resulting node to validate it.
+        // return re parsed node
+
+        todo!()
     }
 }
