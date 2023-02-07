@@ -35,10 +35,10 @@ delete p/version"###;
         let replacers = node.get_mutation_replaces(&mutation);
 
         for replacer in replacers {
-            let aa = &doc.input_text()[replacer.bounds];
+            let aa = &doc.input_text()[replacer.bounds.clone()];
             println!(
-                " original text: '{aa}' will be replaced with '{}'",
-                replacer.replacement
+                "original text: '{aa}' at ({:?}) will be replaced with '{}'",
+                replacer.bounds, replacer.replacement
             );
         }
     }
@@ -53,13 +53,18 @@ fn debug_node(node: &Node) {
         bounds
     );
 
-    // TODO: itterate descendants and reconstruct node text while mutating it
-    for a in node.descendants() {
-        let name = a.tag_name();
-        let text = a.get_input_text();
-        let bounds = a.get_bounds();
-        let node_type = a.node_type();
-        println!(" {node_type:?} ({bounds:?}); name: {name:?}; full text: {text:?};");
+    debug_children(node, "".to_string());
+}
+
+fn debug_children(node: &Node, indent: String) {
+    let name = node.tag_name();
+    let text = node.get_input_text();
+    let bounds = node.get_bounds();
+    let node_type = node.node_type();
+    println!("{indent}{node_type:?} ({bounds:?}); name: {name:?}; full text: {text:?};");
+
+    for child in node.children() {
+        debug_children(&child, indent.clone() + " -> ");
     }
 }
 
@@ -100,6 +105,11 @@ pub trait Searchable {
     fn get_ending_value(&self, ending: &SelectorEnding) -> Option<String>;
 
     fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String>;
+    fn find_first_child_element_aliased(
+        &self,
+        node_path: &[&str],
+        alias: &str,
+    ) -> Option<Box<Self>>;
     fn find_first_child_element(&self, node_path: &[&str]) -> Option<Box<Self>>;
 }
 
@@ -166,7 +176,10 @@ impl<'a, 'input: 'a> Searchable for Node<'a, 'input> {
                 a.position() + a.name().len() + 2
                     ..a.position() + a.name().len() + a.value().len() + 2
             }),
-            SelectorEnding::NodeText => Some(self.get_bounds()), // TODO: should get bounds of first child text node
+            SelectorEnding::NodeText => self
+                .first_child()
+                .filter(|c| c.is_text())
+                .map(|c| c.get_bounds()),
         }
     }
 
@@ -180,32 +193,28 @@ impl<'a, 'input: 'a> Searchable for Node<'a, 'input> {
         }
     }
 
+    // TODO: instead should return a structure with ither node or attribute and bounds
     fn get_value_bounds(&self, selector: &ValueSelector, alias: &str) -> Option<Range<usize>> {
-        if let Some((&path_start, node_path)) = selector.node_path.split_first() {
-            if alias.to_lowercase() == path_start.to_lowercase() {
-                if let Some(child_node) = self.find_first_child_element(node_path) {
-                    child_node.get_ending_value_bounds(&selector.ending)
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        }
+        // selector.node_path should yield only a single element?
+        // select first found for now.
+
+        self.find_first_child_element_aliased(&selector.node_path, alias)
+            .and_then(|c| c.get_ending_value_bounds(&selector.ending))
     }
 
     fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String> {
-        // selector.node_path should yield only a single element?
-        // select first found for now.
-        if let Some((&path_start, node_path)) = selector.node_path.split_first() {
+        self.find_first_child_element_aliased(&selector.node_path, alias)
+            .and_then(|c| c.get_ending_value(&selector.ending))
+    }
+
+    fn find_first_child_element_aliased(
+        &self,
+        node_path: &[&str],
+        alias: &str,
+    ) -> Option<Box<Self>> {
+        if let Some((&path_start, node_path)) = node_path.split_first() {
             if alias.to_lowercase() == path_start.to_lowercase() {
-                if let Some(child_node) = self.find_first_child_element(node_path) {
-                    child_node.get_ending_value(&selector.ending)
-                } else {
-                    None
-                }
+                self.find_first_child_element(node_path)
             } else {
                 None
             }
@@ -254,20 +263,47 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
         let mut replacers: Vec<Replacer> = vec![];
         if let Some(set_op) = mutation.set.clone() {
             for asg in set_op.assignments.into_iter() {
-                if let Some(bounds) =
+                let mut should_construct_attricute = false;
+
+                let bounds = if let Some(bounds) =
                     self.get_value_bounds(&asg.left_side, mutation.get.node_selector.alias)
                 {
-                    if let Some(replacement) = match asg.right_side {
-                        ValueVariant::Selector(selector) => {
-                            self.get_value(&selector, mutation.get.node_selector.alias)
-                        }
-                        ValueVariant::LiteralString(val) => Some(val.to_string()),
-                    } {
-                        replacers.push(Replacer {
-                            bounds,
-                            replacement,
-                        });
+                    bounds
+                } else {
+                    // NOTE: but it could also be a text node we are setting
+                    // self is wrong node here. should take the one that we got bounds from
+
+                    let pos = if self.attributes().len() > 0 {
+                        let atr = self
+                            .attributes()
+                            .last()
+                            .expect("already know there is more then one attribute");
+                        atr.position() + atr.name().len() + atr.value().len() + 2
+                    } else {
+                        self.position() + self.tag_name().name().len() + 1
+                    };
+                    should_construct_attricute = true;
+                    pos..pos
+                };
+
+                // TODO: collect failed get_value()
+                if let Some(replacement) = match asg.right_side {
+                    ValueVariant::Selector(selector) => {
+                        self.get_value(&selector, mutation.get.node_selector.alias)
                     }
+                    ValueVariant::LiteralString(val) => Some(val.to_string()),
+                } {
+                    let replacement = if should_construct_attricute {
+                        let aa = "=\"".to_string() + replacement.as_str() + "\"";
+                        aa
+                    } else {
+                        replacement
+                    };
+
+                    replacers.push(Replacer {
+                        bounds,
+                        replacement,
+                    });
                 }
             }
         }
