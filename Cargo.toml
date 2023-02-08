@@ -1,2 +1,2 @@
 [workspace]
-members = ["xml-mut-parse", "xml-mut-cli"]
+members = ["xml-mut-parse", "xml-mut-cli", "xml-mut-impl"]

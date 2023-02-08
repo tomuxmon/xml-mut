@@ -1,5 +1,5 @@
 [package]
-name = "xml-mut-cli"
+name = "xml-mut-impl"
 version = "0.0.0"
 edition = "2021"
 
@@ -8,4 +8,3 @@ edition = "2021"
 [dependencies]
 roxmltree = "0.17.0"
 xml-mut-parse = { path = "../xml-mut-parse" }
-xml-mut-impl = { path = "../xml-mut-impl" }
