@@ -1,4 +1,3 @@
-
 use crate::prelude::*;
 use nom::{
     bytes::complete::{tag, tag_no_case, take_till},
@@ -9,7 +8,10 @@ use nom::{
 };
 
 pub fn value_selector_ending(s: &str) -> IResult<&str, SelectorEnding> {
-    // p@name or v@>text
+    // TODO: revisit and stabilize on maybe:
+    // p@name or v@>text // current impl -> missing tail; also looks ugly as hell
+    // p.name or v.text() or v.tail() // programmer friendly looks like property / method access
+    // p/@name or p/text() or p/tail() // somewhar XPath complient
     let (s, _) = tag("@")(s)?;
     let (s, text_tag) = opt(tag(">text"))(s)?;
 
@@ -22,17 +24,14 @@ pub fn value_selector_ending(s: &str) -> IResult<&str, SelectorEnding> {
 }
 
 pub fn value_selector(s: &str) -> IResult<&str, ValueSelector> {
+    // TODO: revisit and stabilize on maybe:
+    // some/path // current impl -> missing node index selector ; might be confusing since it is similar to XPath yet it is not
+    // some[0]/path[1] // looks more like XPath and [0] could be ommited and minimized to current implementyed form
+    // just use XPath // would require additional lib and owuld couple with presumably complicated XPath syntax (not needed here?)
     let (s, node_path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
     let (s, ending) = value_selector_ending(s)?;
 
-   
-    Ok((
-        s,
-        ValueSelector {
-            node_path,
-            ending,
-        },
-    ))
+    Ok((s, ValueSelector { node_path, ending }))
 }
 
 pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateNodeExists> {
