@@ -26,7 +26,7 @@ delete p/version"###;
         debug_node(&node);
 
         // TODO: perform node update, set operation
-        let replacers = node.get_mutation_replaces(&mutation);
+        let replacers = node.get_replacers(&mutation);
 
         for replacer in replacers {
             let aa = &doc.input_text()[replacer.bounds.clone()];

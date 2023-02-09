@@ -22,14 +22,14 @@ fn parse_value_assignment_1() {
     let fragment = "r/tron@morka = \"true\"";
     let (_, b) = value_assignment(fragment).expect("could not parse value assignment");
     assert_eq!(
-        b.left_side.ending,
+        b.target.ending,
         SelectorEnding::AttributeName("morka")
     );
-    assert_eq!(b.left_side.node_path.len(), 2);
-    assert_eq!(b.left_side.node_path[0], "r");
-    assert_eq!(b.left_side.node_path[1], "tron");
+    assert_eq!(b.target.node_path.len(), 2);
+    assert_eq!(b.target.node_path[0], "r");
+    assert_eq!(b.target.node_path[1], "tron");
     assert_eq!(
-        b.right_side,
+        b.source,
         ValueVariant::LiteralString("true")
     );
 }
@@ -39,13 +39,13 @@ fn parse_value_assignment_2() {
     let fragment = "r/tron@morka = r/balbon@>text";
     let (_, b) = value_assignment(fragment).expect("could not parse value assignment");
     assert_eq!(
-        b.left_side.ending,
+        b.target.ending,
         SelectorEnding::AttributeName("morka")
     );
-    assert_eq!(b.left_side.node_path.len(), 2);
-    assert_eq!(b.left_side.node_path[0], "r");
-    assert_eq!(b.left_side.node_path[1], "tron");
-    if let ValueVariant::Selector(_) = b.right_side {
+    assert_eq!(b.target.node_path.len(), 2);
+    assert_eq!(b.target.node_path[0], "r");
+    assert_eq!(b.target.node_path[1], "tron");
+    if let ValueVariant::Selector(_) = b.source {
     } else {
         panic!("could not parse value assignment right side as a value selector");
     }

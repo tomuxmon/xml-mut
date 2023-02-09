@@ -24,18 +24,12 @@ pub fn value_variant(s: &str) -> IResult<&str, ValueVariant> {
 }
 
 pub fn value_assignment(s: &str) -> IResult<&str, ValueAssignment> {
-    let (s, left_side) = value_selector(s)?;
+    let (s, target) = value_selector(s)?;
     let (s, _) = multispace1(s)?;
     let (s, _) = tag_no_case("=")(s)?;
     let (s, _) = multispace1(s)?;
-    let (s, right_side) = value_variant(s)?;
-    Ok((
-        s,
-        ValueAssignment {
-            left_side,
-            right_side,
-        },
-    ))
+    let (s, source) = value_variant(s)?;
+    Ok((s, ValueAssignment { target, source }))
 }
 
 fn comma_surounded_mulispace01(s: &str) -> IResult<&str, &str> {

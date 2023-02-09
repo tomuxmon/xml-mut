@@ -55,8 +55,8 @@ pub struct WhereClause<'a> {
 
 #[derive(Debug, Clone)]
 pub struct ValueAssignment<'a> {
-    pub left_side: ValueSelector<'a>,
-    pub right_side: ValueVariant<'a>,
+    pub target: ValueSelector<'a>,
+    pub source: ValueVariant<'a>,
 }
 
 #[derive(Debug, Clone)]

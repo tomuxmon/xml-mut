@@ -1,6 +1,9 @@
 use crate::replacer::Replacer;
 
+#[derive(Debug)]
 pub enum ReplaceError {
-    OverlappingReplacer(Replacer, Replacer),
-    InvalidGeneratedXml(String),
+    ReplacerOverlap(Replacer, Replacer),
+    GeneratedXmlInvalid(String),
+    DeleteNothing(String),
+    DeletePathShouldStartWithAlias(String),
 }
