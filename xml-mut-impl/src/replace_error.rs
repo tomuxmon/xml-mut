@@ -6,4 +6,7 @@ pub enum ReplaceError {
     GeneratedXmlInvalid(String),
     DeleteNothing(String),
     DeletePathShouldStartWithAlias(String),
+    AssignmentTargetNotFound(String),
+    AssignmentSourceValueNotFound(String),
+    AssignmentTargetBoundsNotFound(String),
 }
