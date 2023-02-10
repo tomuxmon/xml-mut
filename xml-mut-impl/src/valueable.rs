@@ -8,15 +8,17 @@ pub trait Valueable {
     fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String>;
     fn get_value_bounds(&self, selector: &ValueSelector, alias: &str) -> Option<Range<usize>>;
 
-    fn get_ending_value(&self, ending: &ValueSource) -> Option<String>;
-    fn get_ending_value_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
+    fn get_value_of(&self, selector: &ValueVariant, alias: &str) -> Option<String>;
+
+    fn get_source_value(&self, ending: &ValueSource) -> Option<String>;
+    fn get_source_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
 
     fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, ReplaceError>;
     fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, ReplaceError>;
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
-    fn get_ending_value_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
+    fn get_source_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
         match ending {
             ValueSource::Attribute(name) => self.get_attribute_with_name(name).map(|a| {
                 a.position() + a.name().len() + 2
@@ -30,7 +32,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
     }
 
-    fn get_ending_value(&self, ending: &ValueSource) -> Option<String> {
+    fn get_source_value(&self, ending: &ValueSource) -> Option<String> {
         // TODO: String -> &'a str
         match ending {
             ValueSource::Attribute(name) => self
@@ -46,95 +48,91 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         // selector.node_path should yield only a single element?
         // select first found for now.
         self.find_first_child_element_aliased(&selector.node_path, alias)
-            .and_then(|c| c.get_ending_value_bounds(&selector.source))
+            .and_then(|c| c.get_source_bounds(&selector.source))
     }
 
     fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String> {
         self.find_first_child_element_aliased(&selector.node_path, alias)
-            .and_then(|c| c.get_ending_value(&selector.source))
+            .and_then(|c| c.get_source_value(&selector.source))
+    }
+
+    fn get_value_of(&self, selector: &ValueVariant, alias: &str) -> Option<String> {
+        match selector {
+            ValueVariant::Selector(selector) => self.get_value(selector, alias),
+            ValueVariant::LiteralString(val) => Some(val.to_string()),
+        }
     }
 
     fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, ReplaceError> {
-        if let Some(assignment_node) =
-            self.find_first_child_element_aliased(&assignment.target.node_path, alias)
-        {
-            // capture all the permutations in a single struct (desired outcome : bounds wtih value to be replaced)
-            // target SelectorEnding::AttributeName (may get attribute or not, if no attribute one must be constructed)
-            // target SelectorEnding::NodeText (may get next text node or not, if no text node just get bounds of in between xml tags)
-            // source ValueVariant::Selector (may get value or not, if no value bail out, do it early)
-            // source ValueVariant::LiteralString (will always contain value)
+        // capture all the permutations in a single struct (desired outcome : bounds wtih value to be replaced)
+        // target ValueSource::Attribute (may get attribute or not, if no attribute one must be constructed)
+        //      // special case when attribute does not exist and we need to construct it
+        // target ValueSource::Text (may get next text node or not, if no text node just get bounds of in between xml tags)
+        // target ValueSource::Tail (may get last child text node or not, if no text node just get bounds of in between xml tags of the last child element node and self)
 
-            let bounds_maybe = assignment_node.get_ending_value_bounds(&assignment.target.source);
+        // source ValueVariant::Selector (may get value or not, if no value bail out, do it early)
+        //      source ValueSource::Attribute
+        //      source ValueSource::Text
+        //      source ValueSource::Tail
+        // source ValueVariant::LiteralString (will always contain value)
 
-            match &assignment.target.source {
-                ValueSource::Attribute(name) => {}
-                ValueSource::Text => {}
-                ValueSource::Tail => {}
-            }
-
-            match &assignment.source {
-                ValueVariant::Selector(selector) => {
-                    self.get_value(selector, alias);
+        let assignment_node =
+            match self.find_first_child_element_aliased(&assignment.target.node_path, alias) {
+                Some(node) => node,
+                None => {
+                    return Err(ReplaceError::AssignmentTargetNotFound(format!(
+                        "Node {:?} does not contain a sub node with as path {:?} and alias {}.",
+                        self.tag_name(),
+                        &assignment.target.node_path,
+                        alias
+                    )))
                 }
-                ValueVariant::LiteralString(val) => {
-                    // replacers.push(Replacer {
-                    //     bounds,
-                    //     replacement,
-                    // });
+            };
 
-                    //Some(val.to_string());
-                }
+        let replacement = match assignment_node.get_value_of(&assignment.source, alias) {
+            Some(val) => val,
+            None => {
+                return Err(ReplaceError::AssignmentSourceValueNotFound(format!(
+                    "Node {:?} does not contain a sub node at {:?} and alias {}.",
+                    self.tag_name(),
+                    &assignment.source,
+                    alias
+                )))
             }
-        } else {
+        };
 
-            // nothing to mutate, return an info message
-            // ReplaceError
+        // NOTE: special case when attribute does not exist and we need to construct it
+        if let ValueSource::Attribute(attribute_name) = assignment.target.source {
+            if assignment_node
+                .get_attribute_with_name(attribute_name)
+                .is_none()
+            {
+                // TODO: construct attribute and early return replacer
+                // I will need:
+                // assignment_node
+                // attribute_name
+                // assignment_value
+            }
         }
 
-        // let mut should_construct_attricute = false;
+        // NOTE: the rest should have a proper bounds, no more special cases
+        let bounds = match assignment_node.get_source_bounds(&assignment.target.source) {
+            Some(b) => b,
+            None => {
+                return Err(ReplaceError::AssignmentTargetBoundsNotFound(format!(
+                    "Assignment Node {:?} could not produce valid target bounds. Path {:?}, source {:?}, and alias {}.",
+                    assignment_node,
+                    &assignment.target.node_path,
+                    &assignment.target.source,
+                    alias
+                )))
+            }
+        };
 
-        // let bounds = if let Some(bounds) =
-        //     self.get_value_bounds(&asg.left_side, alias)
-        // {
-        //     bounds
-        // } else {
-        //     // NOTE: but it could also be a text node we are setting
-        //     // self is wrong node here. should take the one that we got bounds from
-
-        //     let pos = if self.attributes().len() > 0 {
-        //         let atr = self
-        //             .attributes()
-        //             .last()
-        //             .expect("already know there is more then one attribute");
-        //         atr.position() + atr.name().len() + atr.value().len() + 2
-        //     } else {
-        //         self.position() + self.tag_name().name().len() + 1
-        //     };
-        //     should_construct_attricute = true;
-        //     pos..pos
-        // };
-
-        // TODO: collect failed get_value()
-        // if let Some(replacement) = match asg.right_side {
-        //     ValueVariant::Selector(selector) => {
-        //         self.get_value(&selector, alias)
-        //     }
-        //     ValueVariant::LiteralString(val) => Some(val.to_string()),
-        // } {
-        //     let replacement = if should_construct_attricute {
-        //         let aa = "=\"".to_string() + replacement.as_str() + "\"";
-        //         aa
-        //     } else {
-        //         replacement
-        //     };
-
-        //     replacers.push(Replacer {
-        //         bounds,
-        //         replacement,
-        //     });
-        // }
-
-        todo!()
+        Ok(Replacer {
+            bounds,
+            replacement,
+        })
     }
 
     fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, ReplaceError> {
