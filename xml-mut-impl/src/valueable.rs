@@ -81,7 +81,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 Some(node) => node,
                 None => {
                     return Err(ReplaceError::AssignmentTargetNotFound(format!(
-                        "Node {:?} does not contain a sub node with as path {:?} and alias {}.",
+                        "Node {:?} does not contain a sub node with as path {:?} and alias '{}'.",
                         self.tag_name(),
                         &assignment.target.node_path,
                         alias
@@ -93,7 +93,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             Some(val) => val,
             None => {
                 return Err(ReplaceError::AssignmentSourceValueNotFound(format!(
-                    "Node {:?} does not contain a sub node at {:?} and alias {}.",
+                    "Node {:?} does not contain a sub node at {:?} and alias '{}'.",
                     self.tag_name(),
                     &assignment.source,
                     alias
@@ -120,8 +120,8 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             Some(b) => b,
             None => {
                 return Err(ReplaceError::AssignmentTargetBoundsNotFound(format!(
-                    "Assignment Node {:?} could not produce valid target bounds. Path {:?}, source {:?}, and alias {}.",
-                    assignment_node,
+                    "Assignment Node {:?} could not produce valid target bounds. Path {:?}, source {:?}, and alias '{}'.",
+                    assignment_node.tag_name(),
                     &assignment.target.node_path,
                     &assignment.target.source,
                     alias
