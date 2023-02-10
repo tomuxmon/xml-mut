@@ -1,5 +1,5 @@
-use crate::{replace_error::ReplaceError, replacer::Replacer};
 use super::node_ext::*;
+use crate::{replace_error::ReplaceError, replacer::Replacer};
 use roxmltree::*;
 use std::ops::Range;
 use xml_mut_parse::prelude::*;
@@ -8,34 +8,36 @@ pub trait Valueable {
     fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String>;
     fn get_value_bounds(&self, selector: &ValueSelector, alias: &str) -> Option<Range<usize>>;
 
-    fn get_ending_value(&self, ending: &SelectorEnding) -> Option<String>;
-    fn get_ending_value_bounds(&self, ending: &SelectorEnding) -> Option<Range<usize>>;
+    fn get_ending_value(&self, ending: &ValueSource) -> Option<String>;
+    fn get_ending_value_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
 
     fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, ReplaceError>;
     fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, ReplaceError>;
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
-    fn get_ending_value_bounds(&self, ending: &SelectorEnding) -> Option<Range<usize>> {
+    fn get_ending_value_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
         match ending {
-            SelectorEnding::AttributeName(name) => self.get_attribute_with_name(name).map(|a| {
+            ValueSource::Attribute(name) => self.get_attribute_with_name(name).map(|a| {
                 a.position() + a.name().len() + 2
                     ..a.position() + a.name().len() + a.value().len() + 2
             }),
-            SelectorEnding::NodeText => self
+            ValueSource::Text => self
                 .first_child()
                 .filter(|c| c.is_text())
                 .map(|c| c.get_bounds()),
+            ValueSource::Tail => todo!(),
         }
     }
 
-    fn get_ending_value(&self, ending: &SelectorEnding) -> Option<String> {
+    fn get_ending_value(&self, ending: &ValueSource) -> Option<String> {
         // TODO: String -> &'a str
         match ending {
-            SelectorEnding::AttributeName(name) => self
+            ValueSource::Attribute(name) => self
                 .get_attribute_with_name(name)
                 .map(|a| a.value().to_string()),
-            SelectorEnding::NodeText => self.text().map(|t| t.to_string()),
+            ValueSource::Text => self.text().map(|t| t.to_string()),
+            ValueSource::Tail => todo!(),
         }
     }
 
@@ -44,16 +46,16 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         // selector.node_path should yield only a single element?
         // select first found for now.
         self.find_first_child_element_aliased(&selector.node_path, alias)
-            .and_then(|c| c.get_ending_value_bounds(&selector.ending))
+            .and_then(|c| c.get_ending_value_bounds(&selector.source))
     }
 
     fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String> {
         self.find_first_child_element_aliased(&selector.node_path, alias)
-            .and_then(|c| c.get_ending_value(&selector.ending))
+            .and_then(|c| c.get_ending_value(&selector.source))
     }
 
     fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, ReplaceError> {
-        if let Some(node) =
+        if let Some(assignment_node) =
             self.find_first_child_element_aliased(&assignment.target.node_path, alias)
         {
             // capture all the permutations in a single struct (desired outcome : bounds wtih value to be replaced)
@@ -62,11 +64,12 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             // source ValueVariant::Selector (may get value or not, if no value bail out, do it early)
             // source ValueVariant::LiteralString (will always contain value)
 
-            let bounds_maybe = node.get_ending_value_bounds(&assignment.target.ending);
+            let bounds_maybe = assignment_node.get_ending_value_bounds(&assignment.target.source);
 
-            match &assignment.target.ending {
-                SelectorEnding::AttributeName(name) => {}
-                SelectorEnding::NodeText => {}
+            match &assignment.target.source {
+                ValueSource::Attribute(name) => {}
+                ValueSource::Text => {}
+                ValueSource::Tail => {}
             }
 
             match &assignment.source {
@@ -83,7 +86,9 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 }
             }
         } else {
+
             // nothing to mutate, return an info message
+            // ReplaceError
         }
 
         // let mut should_construct_attricute = false;
@@ -133,6 +138,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
     }
 
     fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, ReplaceError> {
+        // TOOD: self closing element replacer when empty node
         if let Some((&path_start, node_path)) = delete.node_path.split_first() {
             if alias.to_lowercase() == path_start.to_lowercase() {
                 if let Some(deletable_node) = self.find_first_child_element(node_path) {

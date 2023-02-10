@@ -20,13 +20,14 @@ pub enum ValueVariant<'a> {
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct ValueSelector<'a> {
     pub node_path: Vec<&'a str>,
-    pub ending: SelectorEnding<'a>,
+    pub source: ValueSource<'a>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum SelectorEnding<'a> {
-    AttributeName(&'a str),
-    NodeText,
+pub enum ValueSource<'a> {
+    Attribute(&'a str),
+    Text,
+    Tail,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]

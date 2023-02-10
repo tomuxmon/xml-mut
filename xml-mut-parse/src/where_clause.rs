@@ -7,19 +7,22 @@ use nom::{
     IResult,
 };
 
-pub fn value_selector_ending(s: &str) -> IResult<&str, SelectorEnding> {
+pub fn value_source(s: &str) -> IResult<&str, ValueSource> {
     // TODO: revisit and stabilize on maybe:
     // p@name or v@>text // current impl -> missing tail; also looks ugly as hell
     // p.name or v.text() or v.tail() // programmer friendly looks like property / method access
     // p/@name or p/text() or p/tail() // somewhar XPath complient
     let (s, _) = tag("@")(s)?;
     let (s, text_tag) = opt(tag(">text"))(s)?;
+    let (s, tail_tag) = opt(tag(">tail"))(s)?;
 
     Ok(if text_tag.is_some() {
-        (s, SelectorEnding::NodeText)
+        (s, ValueSource::Text)
+    } else if tail_tag.is_some() {
+        (s, ValueSource::Tail)
     } else {
         let (s, attr_name) = take_till(|c: char| !c.is_alphanumeric())(s)?;
-        (s, SelectorEnding::AttributeName(attr_name))
+        (s, ValueSource::Attribute(attr_name))
     })
 }
 
@@ -29,9 +32,9 @@ pub fn value_selector(s: &str) -> IResult<&str, ValueSelector> {
     // some[0]/path[1] // looks more like XPath and [0] could be ommited and minimized to current implementyed form
     // just use XPath // would require additional lib and owuld couple with presumably complicated XPath syntax (not needed here?)
     let (s, node_path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
-    let (s, ending) = value_selector_ending(s)?;
+    let (s, source) = value_source(s)?;
 
-    Ok((s, ValueSelector { node_path, ending }))
+    Ok((s, ValueSelector { node_path, source }))
 }
 
 pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateNodeExists> {
