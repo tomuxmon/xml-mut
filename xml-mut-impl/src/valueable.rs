@@ -1,5 +1,5 @@
 use super::node_ext::*;
-use crate::{replace_error::ReplaceError, replacer::Replacer};
+use crate::{prelude::AttributeExtensions, replace_error::ReplaceError, replacer::Replacer};
 use roxmltree::*;
 use std::ops::Range;
 use xml_mut_parse::prelude::*;
@@ -13,6 +13,8 @@ pub trait Valueable {
     fn get_source_value(&self, ending: &ValueSource) -> Option<String>;
     fn get_source_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
 
+    fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer;
+
     fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, ReplaceError>;
     fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, ReplaceError>;
 }
@@ -20,10 +22,9 @@ pub trait Valueable {
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
     fn get_source_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
         match ending {
-            ValueSource::Attribute(name) => self.get_attribute_with_name(name).map(|a| {
-                a.position() + a.name().len() + 2
-                    ..a.position() + a.name().len() + a.value().len() + 2
-            }),
+            ValueSource::Attribute(name) => self
+                .get_attribute_with_name(name)
+                .map(|a| a.get_value_bounds()),
             ValueSource::Text => self
                 .first_child()
                 .filter(|c| c.is_text())
@@ -43,7 +44,24 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
     }
 
-    // TODO: instead should return a structure with ither node or attribute and bounds
+    fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer {
+        let pos = if let Some(a) = self.attributes().last().map(|a| a.get_bounds().end + 1) {
+            a
+        } else {
+            self.position() + 1 + self.tag_name().name().len() + 1
+        };
+
+        // TODO: string escaping
+        // TODO: pick quotes for attribute value enclosement
+
+        let replacement: String = attribute_name.to_string() + "=\"" + value.as_str() + "\"";
+
+        Replacer {
+            bounds: pos..pos,
+            replacement,
+        }
+    }
+
     fn get_value_bounds(&self, selector: &ValueSelector, alias: &str) -> Option<Range<usize>> {
         // selector.node_path should yield only a single element?
         // select first found for now.
@@ -107,13 +125,12 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 .get_attribute_with_name(attribute_name)
                 .is_none()
             {
-                // TODO: construct attribute and early return replacer
-                // I will need:
-                // assignment_node
-                // attribute_name
-                // assignment_value
+                return Ok(assignment_node.get_new_attribute_replacer(attribute_name, replacement));
             }
         }
+
+        // TODO: special case whan assigning to a text node of non existing node
+        // should it be automatically created or should there be an opt it?
 
         // NOTE: the rest should have a proper bounds, no more special cases
         let bounds = match assignment_node.get_source_bounds(&assignment.target.source) {
