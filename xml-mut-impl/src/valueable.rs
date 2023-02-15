@@ -1,5 +1,4 @@
-use super::node_ext::*;
-use crate::{prelude::AttributeExtensions, replace_error::ReplaceError, replacer::Replacer};
+use crate::prelude::{AssignError, AttributeExtensions, DeleteError, NodeExtensions, Replacer};
 use roxmltree::*;
 use std::ops::Range;
 use xml_mut_parse::prelude::*;
@@ -15,8 +14,8 @@ pub trait Valueable {
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer;
 
-    fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, ReplaceError>;
-    fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, ReplaceError>;
+    fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, AssignError>;
+    fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, DeleteError>;
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
@@ -45,7 +44,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
     }
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer {
-        let pos = if let Some(a) = self.attributes().last().map(|a| a.get_bounds().end + 1) {
+        let pos = if let Some(a) = self.attributes().last().map(|a| a.get_bounds().end) {
             a
         } else {
             self.position() + 1 + self.tag_name().name().len() + 1
@@ -54,7 +53,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         // TODO: string escaping
         // TODO: pick quotes for attribute value enclosement
 
-        let replacement: String = attribute_name.to_string() + "=\"" + value.as_str() + "\"";
+        let replacement: String = format!(" {attribute_name}=\"{value}\"");
 
         Replacer {
             bounds: pos..pos,
@@ -81,7 +80,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
     }
 
-    fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, ReplaceError> {
+    fn assign(&self, assignment: &ValueAssignment, alias: &str) -> Result<Replacer, AssignError> {
         // capture all the permutations in a single struct (desired outcome : bounds wtih value to be replaced)
         // target ValueSource::Attribute (may get attribute or not, if no attribute one must be constructed)
         //      // special case when attribute does not exist and we need to construct it
@@ -98,7 +97,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             match self.find_first_child_element_aliased(&assignment.target.node_path, alias) {
                 Some(node) => node,
                 None => {
-                    return Err(ReplaceError::AssignmentTargetNotFound(format!(
+                    return Err(AssignError::AssignmentTargetNotFound(format!(
                         "Node {:?} does not contain a sub node with as path {:?} and alias '{}'.",
                         self.tag_name(),
                         &assignment.target.node_path,
@@ -110,7 +109,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         let replacement = match assignment_node.get_value_of(&assignment.source, alias) {
             Some(val) => val,
             None => {
-                return Err(ReplaceError::AssignmentSourceValueNotFound(format!(
+                return Err(AssignError::AssignmentSourceValueNotFound(format!(
                     "Node {:?} does not contain a sub node at {:?} and alias '{}'.",
                     self.tag_name(),
                     &assignment.source,
@@ -136,7 +135,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         let bounds = match assignment_node.get_source_bounds(&assignment.target.source) {
             Some(b) => b,
             None => {
-                return Err(ReplaceError::AssignmentTargetBoundsNotFound(format!(
+                return Err(AssignError::AssignmentTargetBoundsNotFound(format!(
                     "Assignment Node {:?} could not produce valid target bounds. Path {:?}, source {:?}, and alias '{}'.",
                     assignment_node.tag_name(),
                     &assignment.target.node_path,
@@ -152,7 +151,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         })
     }
 
-    fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, ReplaceError> {
+    fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, DeleteError> {
         // TOOD: self closing element replacer when empty node
         if let Some((&path_start, node_path)) = delete.node_path.split_first() {
             if alias.to_lowercase() == path_start.to_lowercase() {
@@ -162,17 +161,17 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                         replacement: "".to_string(),
                     })
                 } else {
-                    Err(ReplaceError::DeleteNothing(
+                    Err(DeleteError::DeleteNothing(
                         "found nothing to delete".to_string(),
                     ))
                 }
             } else {
-                Err(ReplaceError::DeletePathShouldStartWithAlias(
+                Err(DeleteError::DeletePathShouldStartWithAlias(
                     "delete path should start with an alias".to_string(),
                 ))
             }
         } else {
-            Err(ReplaceError::DeletePathShouldStartWithAlias(
+            Err(DeleteError::DeletePathShouldStartWithAlias(
                 "delete path should have at least 1 element - alias".to_string(),
             ))
         }

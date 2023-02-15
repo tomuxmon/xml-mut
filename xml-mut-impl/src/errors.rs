@@ -1,12 +1,20 @@
 use crate::replacer::Replacer;
 
 #[derive(Debug)]
-pub enum ReplaceError {
-    ReplacerOverlap(Replacer, Replacer),
-    GeneratedXmlInvalid(String),
+pub enum DeleteError {
     DeleteNothing(String),
     DeletePathShouldStartWithAlias(String),
+}
+
+#[derive(Debug)]
+pub enum AssignError {
     AssignmentTargetNotFound(String),
     AssignmentSourceValueNotFound(String),
     AssignmentTargetBoundsNotFound(String),
+}
+
+#[derive(Debug)]
+pub enum ReplaceError {
+    ReplacerOverlap(Replacer, Replacer),
+    GeneratedXmlInvalid(String),
 }

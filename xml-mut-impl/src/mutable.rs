@@ -7,7 +7,7 @@ pub trait Mutable {
     // TODO: method to construct an attribute with a name and value pair
     fn is_fit(&self, mutation: &Mutation) -> bool;
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer>;
-    fn apply(&self, replacers: &[Replacer]) -> Result<Box<Self>, ReplaceError>;
+    fn apply(&self, replacers: &[Replacer]) -> Result<Replacer, ReplaceError>;
 }
 
 impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
@@ -37,12 +37,36 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
         replacers
     }
 
-    fn apply(&self, replacers: &[Replacer]) -> Result<Box<Self>, ReplaceError> {
+    fn apply(&self, replacers: &[Replacer]) -> Result<Replacer, ReplaceError> {
+        // todo: validate replacer.bounds.is_empty()
         // TODO: validate replacer overlaps
+        // TODO: replacers should be inside node bounds
         // TODO: reconstruct node with replacers applied
         // TODO: reparse resulting node to validate it.
         // return re parsed node
+        // calculate new string size based on replacer bounds and value difference
 
-        todo!()
+        let node_bounds = self.get_bounds();
+        let current_text = &self.document().input_text()[node_bounds.clone()];
+        let new_len = usize::try_from(
+            i32::try_from(node_bounds.end - node_bounds.start).unwrap_or(0)
+                + replacers.iter().map(|r| r.len_diff()).sum::<i32>(),
+        )
+        .unwrap_or(current_text.len());
+        let mut new_text = String::with_capacity(new_len);
+        let mut replacers_sorted = replacers.to_vec();
+        replacers_sorted.sort_by(|a, b| a.bounds_cmp(b));
+
+        let mut offset = node_bounds.start;
+        for replacer in replacers_sorted {
+            new_text.push_str(&self.document().input_text()[offset..replacer.bounds.start]);
+            new_text.push_str(&replacer.replacement);
+            offset = replacer.bounds.end;
+        }
+        new_text.push_str(&self.document().input_text()[offset..node_bounds.end]);
+        Ok(Replacer {
+            bounds: node_bounds,
+            replacement: new_text,
+        })
     }
 }
