@@ -3,7 +3,6 @@ mod get_statement;
 mod mutation;
 mod set_statement;
 mod structure;
-mod tests;
 mod where_clause;
 
 pub mod prelude {

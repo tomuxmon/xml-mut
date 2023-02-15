@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use xml_mut_parse::prelude::*;
 
 #[test]
 fn parse_delete_statement() {
