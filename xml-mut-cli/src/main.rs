@@ -12,8 +12,11 @@ set p@version = p/version@>text
 delete p/version"###;
 
     let xml = r###"<ItemGroup>
+<doodles Version="sus"></doodles>
+<doodles Version="sus"> </doodles>
 <PackageReference Include="zuzu" Version="sus"> bleep <version>3.0</version> bloop </PackageReference>
 <PackageReference Include="zizi"> <Version>3.0</Version> </PackageReference>
+<PackageReference><Version>4</Version></PackageReference>
 <PackageReference Include="zohan" Version="4.0" />
 </ItemGroup>"###;
 
@@ -21,6 +24,8 @@ delete p/version"###;
     println!("{mutation:?}");
 
     let doc: Document = Document::parse(xml).unwrap();
+
+    debug_node(&doc.root_element());
 
     for node in doc.descendants().filter(|n| n.is_fit(&mutation)) {
         debug_node(&node);

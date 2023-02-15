@@ -152,7 +152,6 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
     }
 
     fn delete(&self, delete: &DeleteStatement, alias: &str) -> Result<Replacer, DeleteError> {
-        // TOOD: self closing element replacer when empty node
         if let Some((&path_start, node_path)) = delete.node_path.split_first() {
             if alias.to_lowercase() == path_start.to_lowercase() {
                 if let Some(deletable_node) = self.find_first_child_element(node_path) {

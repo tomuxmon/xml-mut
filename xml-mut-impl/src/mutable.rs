@@ -1,5 +1,5 @@
 use crate::prelude::{Fitable, NodeExtensions, ReplaceError, Replacer, Valueable};
-use roxmltree::Node;
+use roxmltree::{Document, Node};
 use xml_mut_parse::prelude::Mutation;
 
 pub trait Mutable {
@@ -64,6 +64,21 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
             offset = replacer.bounds.end;
         }
         new_text.push_str(&self.document().input_text()[offset..node_bounds.end]);
+
+        if let Ok(doc) = Document::parse(&new_text) {
+            let node = doc.root_element();
+            if node.first_element_child().is_none()
+                && node.text().map_or(true, |t| t.trim().is_empty())
+            {
+                // TODO: trim closing tag
+                println!("todo: in place replace without replacer");
+            }
+        } else {
+            return Err(ReplaceError::GeneratedXmlInvalid(
+                "xml is invalid after applying replacers".to_string(),
+            ));
+        }
+
         Ok(Replacer {
             bounds: node_bounds,
             replacement: new_text,
