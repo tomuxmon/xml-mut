@@ -47,7 +47,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         let pos = if let Some(a) = self.attributes().last().map(|a| a.get_bounds().end) {
             a
         } else {
-            self.range().start + 1 + self.tag_name().name().len() + 1
+            self.range().start + self.tag_name().name().len() + 1
         };
 
         // TODO: string escaping
