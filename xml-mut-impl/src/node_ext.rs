@@ -95,3 +95,21 @@ impl<'a, 'input: 'a> NodeExtensions for Node<'a, 'input> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use roxmltree::Document;
+
+    #[test]
+    fn it_works() {
+        let xml = "<r><ve>4</ve></r>";
+        let doc: Document = Document::parse(xml).unwrap();
+        let node = doc.descendants().find(|d| d.has_tag_name("ve")).unwrap();
+        let bound = node.get_bounds();
+        let version_xml = &xml[bound.clone()];
+        assert_eq!(version_xml, "<ve>4</ve>");
+        assert_eq!(bound.start, 3);
+        assert_eq!(bound.end, 4);
+    }
+}
