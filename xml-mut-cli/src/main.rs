@@ -28,6 +28,7 @@ delete p/version"###;
     // 1. isinlined as cli args
     // 2. a path to a mutation definition file
     // 3. a name of mutation defination file in a common folder ~/.xml-mut/
+    // 4. can one apply multiple mutations at once with a single call?
 
     // TODO: define how xml path is passed to the CLI
     // 1. a path to a single xml file
