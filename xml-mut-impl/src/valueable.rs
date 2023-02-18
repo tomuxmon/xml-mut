@@ -27,7 +27,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             ValueSource::Text => self
                 .first_child()
                 .filter(|c| c.is_text())
-                .map(|c| c.get_bounds()),
+                .map(|c| c.range()),
             ValueSource::Tail => todo!(),
         }
     }
@@ -47,7 +47,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         let pos = if let Some(a) = self.attributes().last().map(|a| a.get_bounds().end) {
             a
         } else {
-            self.position() + 1 + self.tag_name().name().len() + 1
+            self.range().start + 1 + self.tag_name().name().len() + 1
         };
 
         // TODO: string escaping
@@ -156,7 +156,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             if alias.to_lowercase() == path_start.to_lowercase() {
                 if let Some(deletable_node) = self.find_first_child_element(node_path) {
                     Ok(Replacer {
-                        bounds: deletable_node.get_bounds(),
+                        bounds: deletable_node.range(),
                         replacement: "".to_string(),
                     })
                 } else {

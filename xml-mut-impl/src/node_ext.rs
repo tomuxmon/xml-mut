@@ -1,8 +1,6 @@
-use roxmltree::{Attribute, Node, NodeId, NodeType};
-use std::ops::Range;
+use roxmltree::{Attribute, Node};
 
 pub trait NodeExtensions {
-    fn get_bounds(&self) -> Range<usize>;
     fn get_input_text(&self) -> &str;
     fn is_element_with_name(&self, name: &str) -> bool;
     fn get_attribute_with_name(&self, name: &str) -> Option<Attribute>;
@@ -17,22 +15,8 @@ pub trait NodeExtensions {
 }
 
 impl<'a, 'input: 'a> NodeExtensions for Node<'a, 'input> {
-    fn get_bounds(&self) -> Range<usize> {
-        let pos_start = self.position();
-        let pos_end = match self.node_type() {
-            NodeType::Text => self.position() + self.text().map_or(0, |t| t.len()),
-            _ => self.next_sibling().map(|n| n.position()).unwrap_or(
-                self.document()
-                    .get_node(NodeId::new(self.id().get() + 1))
-                    .map(|s| s.position())
-                    .unwrap_or(self.document().input_text().len()),
-            ),
-        };
-        pos_start..pos_end
-    }
-
     fn get_input_text(&self) -> &str {
-        &self.document().input_text()[self.get_bounds()]
+        &self.document().input_text()[self.range()]
     }
 
     fn is_element_with_name(&self, name: &str) -> bool {
@@ -93,23 +77,5 @@ impl<'a, 'input: 'a> NodeExtensions for Node<'a, 'input> {
         } else {
             None
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use roxmltree::Document;
-
-    #[test]
-    fn it_works() {
-        let xml = "<r><ve>4</ve></r>";
-        let doc: Document = Document::parse(xml).unwrap();
-        let node = doc.descendants().find(|d| d.has_tag_name("ve")).unwrap();
-        let bound = node.get_bounds();
-        let version_xml = &xml[bound.clone()];
-        assert_eq!(version_xml, "<ve>4</ve>");
-        assert_eq!(bound.start, 3);
-        assert_eq!(bound.end, 4);
     }
 }

@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-roxmltree = "0.17.0"
+roxmltree = "0.18.0"
 xml-mut-parse = { path = "../xml-mut-parse" }

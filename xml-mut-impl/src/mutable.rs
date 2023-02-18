@@ -46,7 +46,7 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
         // return re parsed node
         // calculate new string size based on replacer bounds and value difference
 
-        let node_bounds = self.get_bounds();
+        let node_bounds = self.range();
         let current_text = &self.document().input_text()[node_bounds.clone()];
         let new_len = usize::try_from(
             i32::try_from(node_bounds.end - node_bounds.start).unwrap_or(0)

@@ -43,7 +43,7 @@ delete p/version"###;
 }
 
 fn debug_node(node: &Node) {
-    let bounds = node.get_bounds();
+    let bounds = node.range();
 
     println!(
         "found mutatable node: '{:?}', bounds: {:?}",
@@ -57,7 +57,8 @@ fn debug_node(node: &Node) {
 fn debug_children(node: &Node, indent: String) {
     let name = node.tag_name();
     let text = node.get_input_text();
-    let bounds = node.get_bounds();
+    
+    let bounds = node.range();
     let node_type = node.node_type();
     println!("{indent}{node_type:?} ({bounds:?}); name: {name:?}; full text: {text:?};");
 
