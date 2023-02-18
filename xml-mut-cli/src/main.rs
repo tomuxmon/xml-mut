@@ -24,6 +24,16 @@ where exists p/version
 set p@version = p/version@>text
 delete p/version"###;
 
+    // TODO: define how mullation is passed to the CLI
+    // 1. isinlined as cli args
+    // 2. a path to a mutation definition file
+    // 3. a name of mutation defination file in a common folder ~/.xml-mut/
+
+    // TODO: define how xml path is passed to the CLI
+    // 1. a path to a single xml file
+    // 2. a path to a folder of xml files
+    // 3. shoul it drill down in to sub folders? (CLI arg for that)
+
     let (_, mutation) = mutation(mutation_definition).expect("could not parse mutation");
     let doc: Document = Document::parse(xml).expect("could not parse xml");
 
