@@ -1,6 +1,10 @@
 use roxmltree::{Attribute, Node};
 
+use crate::prelude::AttributeExtensions;
+
 pub trait NodeExtensions {
+    fn get_tag_end_position(&self) -> usize;
+
     fn get_input_text(&self) -> &str;
     fn is_element_with_name(&self, name: &str) -> bool;
     fn get_attribute_with_name(&self, name: &str) -> Option<Attribute>;
@@ -15,6 +19,14 @@ pub trait NodeExtensions {
 }
 
 impl<'a, 'input: 'a> NodeExtensions for Node<'a, 'input> {
+    fn get_tag_end_position(&self) -> usize {
+        if let Some(pos) = self.attributes().last().map(|a| a.range().end) {
+            pos
+        } else {
+            self.range().start + self.tag_name().name().len() + 1
+        }
+    }
+
     fn get_input_text(&self) -> &str {
         &self.document().input_text()[self.range()]
     }

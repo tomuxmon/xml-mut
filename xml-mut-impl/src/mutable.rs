@@ -70,8 +70,7 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
             if node.first_element_child().is_none()
                 && node.text().map_or(true, |t| t.trim().is_empty())
             {
-                // TODO: trim closing tag
-                println!("todo: in place replace without replacer");
+                new_text = format!("{} {}", &new_text[0..node.get_tag_end_position()], "/>");
             }
         } else {
             return Err(ReplaceError::GeneratedXmlInvalid(

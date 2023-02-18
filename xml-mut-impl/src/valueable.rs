@@ -44,11 +44,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
     }
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer {
-        let pos = if let Some(a) = self.attributes().last().map(|a| a.range().end) {
-            a
-        } else {
-            self.range().start + self.tag_name().name().len() + 1
-        };
+        let pos = self.get_tag_end_position();
 
         // TODO: string escaping
         // TODO: pick quotes for attribute value enclosement
