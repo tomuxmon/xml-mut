@@ -27,22 +27,12 @@ delete p/version"###;
     let (_, mutation) = mutation(mutation_definition).expect("could not parse mutation");
     let doc: Document = Document::parse(xml).expect("could not parse xml");
 
-    let mut replacers: Vec<Replacer> = vec![];
-    for node in doc.descendants().filter(|n| n.is_fit(&mutation)) {
-        match node.apply(&mutation) {
-            Ok(replacer) => replacers.push(replacer),
-            Err(error) => println!("{error:?}"), // todo: better error handling
-        }
-    }
-
-    let mut new_xml = String::with_capacity(xml.len());
-    let mut offset = 0;
-    for replacer in replacers {
-        new_xml.push_str(&doc.input_text()[offset..replacer.bounds.start]);
-        new_xml.push_str(&replacer.replacement);
-        offset = replacer.bounds.end;
-    }
-    new_xml.push_str(&doc.input_text()[offset..doc.input_text().len()]);
+    let new_xml = if let Some(mutated_xml) = doc.mutate(&mutation) {
+        mutated_xml
+    } else {
+        println!("nothing to be mutated");
+        return;
+    };
 
     println!("{new_xml}");
 }

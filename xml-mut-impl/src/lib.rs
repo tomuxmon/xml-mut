@@ -1,4 +1,5 @@
 mod attribute_ext;
+mod document_ext;
 mod errors;
 mod fitable;
 mod mutable;
@@ -8,6 +9,7 @@ mod valueable;
 
 pub mod prelude {
     pub use super::attribute_ext::*;
+    pub use super::document_ext::*;
     pub use super::errors::*;
     pub use super::fitable::*;
     pub use super::mutable::*;
