@@ -3,11 +3,11 @@ use roxmltree::{Document, Node};
 use xml_mut_parse::prelude::Mutation;
 
 pub trait Mutable {
-    // TODO: method to get element node last attribute possition (or node closing tag position)
-    // TODO: method to construct an attribute with a name and value pair
     fn is_fit(&self, mutation: &Mutation) -> bool;
+    fn apply(&self, mutation: &Mutation) -> Result<Replacer, ReplaceError>;
+
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer>;
-    fn apply(&self, replacers: &[Replacer]) -> Result<Replacer, ReplaceError>;
+    fn apply_replacers(&self, replacers: &[Replacer]) -> Result<Replacer, ReplaceError>;
 }
 
 impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
@@ -37,7 +37,7 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
         replacers
     }
 
-    fn apply(&self, replacers: &[Replacer]) -> Result<Replacer, ReplaceError> {
+    fn apply_replacers(&self, replacers: &[Replacer]) -> Result<Replacer, ReplaceError> {
         // todo: validate replacer.bounds.is_empty()
         // TODO: validate replacer overlaps
         // TODO: replacers should be inside node bounds
@@ -82,5 +82,9 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
             bounds: node_bounds,
             replacement: new_text,
         })
+    }
+
+    fn apply(&self, mutation: &Mutation) -> Result<Replacer, ReplaceError> {
+        self.apply_replacers(&self.get_replacers(mutation))
     }
 }
