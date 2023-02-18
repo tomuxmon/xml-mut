@@ -21,9 +21,9 @@ pub trait Valueable {
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
     fn get_source_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
         match ending {
-            ValueSource::Attribute(name) => self
-                .get_attribute_with_name(name)
-                .map(|a| a.get_value_bounds()),
+            ValueSource::Attribute(name) => {
+                self.get_attribute_with_name(name).map(|a| a.value_range())
+            }
             ValueSource::Text => self
                 .first_child()
                 .filter(|c| c.is_text())
@@ -44,7 +44,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
     }
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer {
-        let pos = if let Some(a) = self.attributes().last().map(|a| a.get_bounds().end) {
+        let pos = if let Some(a) = self.attributes().last().map(|a| a.range().end) {
             a
         } else {
             self.range().start + self.tag_name().name().len() + 1
