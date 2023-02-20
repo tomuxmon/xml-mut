@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use nom::{character::complete::multispace1, combinator::opt, IResult};
+use nom::{character::complete::{multispace1, multispace0}, combinator::opt, IResult};
 
 pub fn mutation(s: &str) -> IResult<&str, Mutation> {
     let (s, get) = get_statement(s)?;
@@ -19,4 +19,11 @@ pub fn mutation(s: &str) -> IResult<&str, Mutation> {
             delete,
         },
     ))
+}
+
+pub fn mutation_surounded_multispace0(s: &str) -> IResult<&str, Mutation> {
+    let (s, _) = multispace0(s)?;
+    let (s, res) = mutation(s)?;
+    let (s, _) = multispace0(s)?;
+    Ok((s, res))
 }
