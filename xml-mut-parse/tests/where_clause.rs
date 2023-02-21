@@ -1,3 +1,4 @@
+use xml_mut_data::{Predicate, ValueSource};
 use xml_mut_parse::prelude::*;
 
 #[test]

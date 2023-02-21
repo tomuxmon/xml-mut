@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 roxmltree = "0.18.0"
-xml-mut-parse = { path = "../xml-mut-parse" }
+xml-mut-data = { path = "../xml-mut-data" }

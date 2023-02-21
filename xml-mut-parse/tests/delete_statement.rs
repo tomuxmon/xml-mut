@@ -8,5 +8,5 @@ fn parse_delete_statement() {
     assert_eq!(b.node_path.len(), 3);
     assert_eq!(b.node_path[0], "ItemGroup");
     assert_eq!(b.node_path[1], "PackageRef");
-    assert_eq!(b.node_path[2], "fomo");    
+    assert_eq!(b.node_path[2], "fomo");
 }

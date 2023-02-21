@@ -1,10 +1,12 @@
-use crate::prelude::*;
 use nom::{
     bytes::complete::{tag, tag_no_case, take_till},
     character::complete::multispace1,
     combinator::opt,
     multi::separated_list1,
     IResult,
+};
+use xml_mut_data::{
+    Predicate, PredicateEquals, PredicateNodeExists, ValueSelector, ValueSource, WhereClause,
 };
 
 pub fn value_source(s: &str) -> IResult<&str, ValueSource> {

@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::where_clause::value_selector;
 use nom::{
     bytes::complete::{tag_no_case, take_till},
     character::complete::{char, multispace0, multispace1},
@@ -7,6 +7,7 @@ use nom::{
     sequence::delimited,
     IResult,
 };
+use xml_mut_data::{SetStatement, ValueAssignment, ValueVariant};
 
 pub fn literal_quoted_string(s: &str) -> IResult<&str, &str> {
     let (s, res) = delimited(char('\"'), take_till(|c| c == '\"'), char('\"'))(s)?;

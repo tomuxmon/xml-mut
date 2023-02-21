@@ -1,6 +1,6 @@
 use crate::prelude::{NodeExtensions, Valueable};
 use roxmltree::Node;
-use xml_mut_parse::prelude::{Predicate, PredicateEquals, PredicateNodeExists};
+use xml_mut_data::{Predicate, PredicateEquals, PredicateNodeExists};
 
 pub trait Fitable {
     fn fits_predicates(&self, predicates: &[Predicate], alias: &str) -> bool {

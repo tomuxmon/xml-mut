@@ -1,6 +1,5 @@
-use roxmltree::{Attribute, Node};
-
 use crate::prelude::AttributeExtensions;
+use roxmltree::{Attribute, Node};
 
 pub trait NodeExtensions {
     fn get_tag_end_position(&self) -> usize;

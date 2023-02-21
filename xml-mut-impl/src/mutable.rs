@@ -1,6 +1,6 @@
 use crate::prelude::{Fitable, NodeExtensions, ReplaceError, Replacer, Valueable};
 use roxmltree::{Document, Node};
-use xml_mut_parse::prelude::Mutation;
+use xml_mut_data::Mutation;
 
 pub trait Mutable {
     fn is_fit(&self, mutation: &Mutation) -> bool;

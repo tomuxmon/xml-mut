@@ -94,7 +94,7 @@ struct MutationSet {
 }
 
 fn xml_path() -> impl Parser<String> {
-    long("path")
+    long("xml-path")
         .short('p')
         .help("path of an xml file")
         .argument::<String>("PATH")
@@ -105,9 +105,9 @@ fn xml_path_many() -> impl Parser<Vec<String>> {
 }
 
 fn xut_path() -> impl Parser<String> {
-    long("xml-mut-path")
+    long("xut-path")
         .short('u')
-        .help("path of a mutation file, usually with a xut file extension")
+        .help("path of a mutation file, usually with a .xut file extension")
         .argument::<String>("PATH")
 }
 

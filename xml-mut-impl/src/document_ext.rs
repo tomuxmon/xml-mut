@@ -1,6 +1,6 @@
 use crate::prelude::{Mutable, Replacer};
 use roxmltree::Document;
-use xml_mut_parse::prelude::Mutation;
+use xml_mut_data::Mutation;
 
 pub trait DocumentExt {
     fn mutate(&self, mutation: &Mutation) -> Option<String>;

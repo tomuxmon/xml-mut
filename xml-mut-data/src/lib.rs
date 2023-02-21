@@ -1,7 +1,3 @@
-// TODO: move structs into a separate crate
-// Allows separate parsers to be implemented
-// Allows xml document extensions(xml-mut-impl) to be independent of parser implementation (xml-mut-parse)
-
 #[derive(Debug, Clone)]
 pub struct NodeSelector<'a> {
     pub path: Vec<&'a str>,

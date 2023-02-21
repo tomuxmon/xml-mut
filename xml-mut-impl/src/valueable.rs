@@ -1,7 +1,7 @@
 use crate::prelude::{AssignError, AttributeExtensions, DeleteError, NodeExtensions, Replacer};
 use roxmltree::*;
 use std::ops::Range;
-use xml_mut_parse::prelude::*;
+use xml_mut_data::*;
 
 pub trait Valueable {
     fn get_value(&self, selector: &ValueSelector, alias: &str) -> Option<String>;

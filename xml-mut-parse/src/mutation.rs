@@ -1,5 +1,10 @@
 use crate::prelude::*;
-use nom::{character::complete::{multispace1, multispace0}, combinator::opt, IResult};
+use nom::{
+    character::complete::{multispace0, multispace1},
+    combinator::opt,
+    IResult,
+};
+use xml_mut_data::Mutation;
 
 pub fn mutation(s: &str) -> IResult<&str, Mutation> {
     let (s, get) = get_statement(s)?;

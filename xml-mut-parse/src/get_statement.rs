@@ -1,10 +1,10 @@
-use crate::prelude::*;
 use nom::{
     bytes::complete::{tag, tag_no_case, take_till},
     character::complete::multispace1,
     multi::separated_list1,
     IResult,
 };
+use xml_mut_data::{GetStatement, NodeSelector};
 
 pub fn node_selector(s: &str) -> IResult<&str, NodeSelector> {
     let (s, path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
