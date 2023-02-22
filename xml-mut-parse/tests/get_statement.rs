@@ -3,7 +3,7 @@ use xml_mut_parse::prelude::*;
 #[test]
 fn parse_node_selector_path1() {
     let fragment = "Packageref";
-    let (_, b) = node_selector(fragment).expect("could not parse node selector");
+    let (_, b) = node_path(fragment).expect("could not parse node selector");
     assert_eq!(b.path.len(), 1);
     assert_eq!(b.path[0], "Packageref");
 }
@@ -11,7 +11,7 @@ fn parse_node_selector_path1() {
 #[test]
 fn parse_node_selector_path2() {
     let fragment = "ItemGroup/PackageRef";
-    let (_, b) = node_selector(fragment).expect("could not parse node selector");
+    let (_, b) = node_path(fragment).expect("could not parse node selector");
     assert_eq!(b.path.len(), 2);
     assert_eq!(b.path[0], "ItemGroup");
     assert_eq!(b.path[1], "PackageRef");

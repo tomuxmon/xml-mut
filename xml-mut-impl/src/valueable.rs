@@ -4,8 +4,8 @@ use std::ops::Range;
 use xml_mut_data::*;
 
 pub trait Valueable {
-    fn get_value(&self, selector: &ValueSelector) -> Option<String>;
-    fn get_value_bounds(&self, selector: &ValueSelector) -> Option<Range<usize>>;
+    fn get_value(&self, selector: &ValuePath) -> Option<String>;
+    fn get_value_bounds(&self, selector: &ValuePath) -> Option<Range<usize>>;
 
     fn get_value_of(&self, selector: &ValueVariant) -> Option<String>;
 
@@ -57,14 +57,14 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
     }
 
-    fn get_value_bounds(&self, selector: &ValueSelector) -> Option<Range<usize>> {
+    fn get_value_bounds(&self, selector: &ValuePath) -> Option<Range<usize>> {
         // selector.node_path should yield only a single element?
         // select first found for now.
         self.find_first_child_element(&selector.node_path)
             .and_then(|c| c.get_source_bounds(&selector.source))
     }
 
-    fn get_value(&self, selector: &ValueSelector) -> Option<String> {
+    fn get_value(&self, selector: &ValuePath) -> Option<String> {
         self.find_first_child_element(&selector.node_path)
             .and_then(|c| c.get_source_value(&selector.source))
     }

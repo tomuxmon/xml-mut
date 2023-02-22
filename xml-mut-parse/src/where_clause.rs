@@ -6,8 +6,10 @@ use nom::{
     IResult,
 };
 use xml_mut_data::{
-    Predicate, PredicateEquals, PredicateNodeExists, ValueSelector, ValueSource, WhereClause,
+    Predicate, PredicateEquals, PredicateNodeExists, ValuePath, ValueSource, WhereClause,
 };
+
+use crate::get_statement::node_path;
 
 pub fn value_source(s: &str) -> IResult<&str, ValueSource> {
     // TODO: revisit and stabilize on maybe:
@@ -28,21 +30,21 @@ pub fn value_source(s: &str) -> IResult<&str, ValueSource> {
     })
 }
 
-pub fn value_selector(s: &str) -> IResult<&str, ValueSelector> {
+pub fn value_selector(s: &str) -> IResult<&str, ValuePath> {
     // TODO: revisit and stabilize on maybe:
     // some/path // current impl -> missing node index selector ; might be confusing since it is similar to XPath yet it is not
     // some[0]/path[1] // looks more like XPath and [0] could be ommited and minimized to current implementyed form
     // just use XPath // would require additional lib and owuld couple with presumably complicated XPath syntax (not needed here?)
-    let (s, node_path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
+    let (s, node_path) = node_path(s)?;
     let (s, source) = value_source(s)?;
 
-    Ok((s, ValueSelector { node_path, source }))
+    Ok((s, ValuePath { node_path, source }))
 }
 
 pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateNodeExists> {
     let (s, exists_word) = tag_no_case("exists")(s)?;
     let (s, _) = multispace1(s)?;
-    let (s, node_path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
+    let (s, node_path) = node_path(s)?;
 
     Ok((
         s,

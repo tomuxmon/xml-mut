@@ -4,18 +4,17 @@ use nom::{
     multi::separated_list1,
     IResult,
 };
-use xml_mut_data::{GetStatement, NodeSelector};
+use xml_mut_data::{GetStatement, NodePath};
 
-pub fn node_selector(s: &str) -> IResult<&str, NodeSelector> {
+pub fn node_path(s: &str) -> IResult<&str, NodePath> {
     let (s, path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
-
-    Ok((s, NodeSelector { path }))
+    Ok((s, NodePath { path }))
 }
 
 pub fn get_statement(s: &str) -> IResult<&str, GetStatement> {
     let (s, get_word) = tag_no_case("get")(s)?;
     let (s, _) = multispace1(s)?;
-    let (s, node_selector) = node_selector(s)?;
+    let (s, node_selector) = node_path(s)?;
 
     Ok((
         s,

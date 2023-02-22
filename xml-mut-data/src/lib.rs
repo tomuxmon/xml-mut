@@ -1,64 +1,75 @@
-#[derive(Debug, Clone)]
-pub struct NodeSelector<'a> {
+use std::ops::Deref;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NodePath<'a> {
     pub path: Vec<&'a str>,
 }
 
-#[derive(Debug, Clone)]
-pub struct GetStatement<'a> {
-    pub get_word: &'a str,
-    pub node_selector: NodeSelector<'a>,
+impl<'a> Deref for NodePath<'a> {
+    type Target = Vec<&'a str>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.path
+    }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetStatement<'a> {
+    pub get_word: &'a str,
+    pub node_selector: NodePath<'a>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueVariant<'a> {
-    Selector(ValueSelector<'a>),
+    Selector(ValuePath<'a>),
     LiteralString(&'a str),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct ValueSelector<'a> {
-    pub node_path: Vec<&'a str>,
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ValuePath<'a> {
+    pub node_path: NodePath<'a>,
     pub source: ValueSource<'a>,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+// TODO: add name
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueSource<'a> {
     Attribute(&'a str),
     Text,
     Tail,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Predicate<'a> {
     NodeExists(PredicateNodeExists<'a>),
     Equals(PredicateEquals<'a>),
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PredicateNodeExists<'a> {
     pub exists_word: &'a str,
-    pub node_path: Vec<&'a str>,
+    pub node_path: NodePath<'a>,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PredicateEquals<'a> {
-    pub left_side: ValueSelector<'a>,
+    pub left_side: ValuePath<'a>,
     pub right_side: &'a str,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WhereClause<'a> {
     pub where_word: &'a str,
     pub predicates: Vec<Predicate<'a>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ValueAssignment<'a> {
-    pub target: ValueSelector<'a>,
+    pub target: ValuePath<'a>,
     pub source: ValueVariant<'a>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SetStatement<'a> {
     pub set_word: &'a str,
     pub assignments: Vec<ValueAssignment<'a>>,
@@ -71,13 +82,13 @@ pub struct SetStatement<'a> {
 // TODO: non desttructive parse of delete statement node path or value selector
 // (if not value selector just use node path)
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DeleteStatement<'a> {
     pub delete_word: &'a str,
-    pub node_path: Vec<&'a str>,
+    pub node_path: NodePath<'a>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Mutation<'a> {
     pub get: GetStatement<'a>,
     pub where_clause: WhereClause<'a>,

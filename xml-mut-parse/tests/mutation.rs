@@ -1,4 +1,4 @@
-use xml_mut_data::{Predicate, PredicateNodeExists};
+use xml_mut_data::{NodePath, Predicate, PredicateNodeExists};
 use xml_mut_parse::prelude::*;
 
 #[test]
@@ -20,7 +20,9 @@ delete version"###;
         w.where_clause.predicates[0],
         Predicate::NodeExists(PredicateNodeExists {
             exists_word: "exists",
-            node_path: vec!["version"]
+            node_path: NodePath {
+                path: vec!["version"]
+            }
         })
     );
     assert!(w.set.is_some());
