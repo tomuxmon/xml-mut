@@ -75,13 +75,9 @@ pub struct SetStatement<'a> {
     pub assignments: Vec<ValueAssignment<'a>>,
 }
 
-// TODO: extract Vec<String> as NodePath struct
-
 // TODO: expect multiple node paths or value selectors in delete statrement
-
 // TODO: non desttructive parse of delete statement node path or value selector
 // (if not value selector just use node path)
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DeleteStatement<'a> {
     pub delete_word: &'a str,

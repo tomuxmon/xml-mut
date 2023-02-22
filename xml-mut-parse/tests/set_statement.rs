@@ -10,7 +10,7 @@ fn parse_literal_quoted_string() {
 
 #[test]
 fn parse_value_variant_1() {    
-    let fragment = "r/tron@morka";
+    let fragment = "r/tron[@morka]";
     let (_, b) = value_variant(fragment).expect("could not parse value variant");
     if let ValueVariant::Selector(_) = b {
     } else {
@@ -20,7 +20,7 @@ fn parse_value_variant_1() {
 
 #[test]
 fn parse_value_assignment_1() {
-    let fragment = "r/tron@morka = \"true\"";
+    let fragment = "r/tron[@morka] = \"true\"";
     let (_, b) = value_assignment(fragment).expect("could not parse value assignment");
     assert_eq!(b.target.source, ValueSource::Attribute("morka"));
     assert_eq!(b.target.node_path.len(), 2);
@@ -31,7 +31,7 @@ fn parse_value_assignment_1() {
 
 #[test]
 fn parse_value_assignment_2() {
-    let fragment = "r/tron@morka = r/balbon@>text";
+    let fragment = "r/tron[@morka] = r/balbon[text]";
     let (_, b) = value_assignment(fragment).expect("could not parse value assignment");
     assert_eq!(b.target.source, ValueSource::Attribute("morka"));
     assert_eq!(b.target.node_path.len(), 2);
@@ -46,7 +46,7 @@ fn parse_value_assignment_2() {
 #[test]
 fn parse_set_statement_1() {
     // instead: SET [@Version] = Version[text]
-    let fragment = "SET r/gho@>text = r/tron@morka, r/tron@morka = \"true\"";
+    let fragment = "SET r/gho[text] = r/tron[@morka], r/tron[@morka] = \"true\"";
     let (rem, b) = set_statement(fragment).expect("could not parse set statement");
     assert_eq!(rem, "");
     assert_eq!(b.set_word, "SET".to_string());

@@ -3,15 +3,8 @@ use xml_mut_parse::prelude::*;
 
 #[test]
 fn parse_value_selector_path1() {
-    // TODO: value selector could also include descendant node index to pick:
-    // zomb[0]/tron[0]@>text
-    // TODO: using value selector with no index should result in error when
-    // more than one descendant is found
-    // tron@>text -> error when more then one tron sub node exists
-    // OR "tron@>text" should be considered equivalent to "tron[0]@>text"
-
-    let fragment = "žomb/tronš@>text";
-    let (_, b) = value_selector(fragment).expect("could not parse value selector");
+    let fragment = "žomb/tronš[text]";
+    let (_, b) = value_path(fragment).expect("could not parse value selector");
     assert_eq!(b.source, ValueSource::Text);
     assert_eq!(b.node_path.len(), 2);
     assert_eq!(b.node_path[0], "žomb");
@@ -20,8 +13,8 @@ fn parse_value_selector_path1() {
 
 #[test]
 fn parse_value_selector_path2() {
-    let fragment = "r/tron@morka";
-    let (_, b) = value_selector(fragment).expect("could not parse value selector");
+    let fragment = "r/tron[@morka]";
+    let (_, b) = value_path(fragment).expect("could not parse value selector");
     assert_eq!(b.source, ValueSource::Attribute("morka"));
     assert_eq!(b.node_path.len(), 2);
     assert_eq!(b.node_path[0], "r");
@@ -30,21 +23,21 @@ fn parse_value_selector_path2() {
 
 #[test]
 fn parse_value_selector_ending_1() {
-    let fragment = "@>text";
+    let fragment = "[text]";
     let (_, b) = value_source(fragment).expect("could not parse node text value selector ending");
     assert_eq!(b, ValueSource::Text);
 }
 
 #[test]
 fn parse_value_selector_ending_3() {
-    let fragment = "@>tail";
+    let fragment = "[tail]";
     let (_, b) = value_source(fragment).expect("could not parse node text value selector ending");
     assert_eq!(b, ValueSource::Tail);
 }
 
 #[test]
 fn parse_value_selector_ending_2() {
-    let fragment = "@version";
+    let fragment = "[@version]";
     let (_, b) =
         value_source(fragment).expect("could not parse attribute name value selector ending");
     assert_eq!(b, ValueSource::Attribute("version"));
@@ -72,7 +65,7 @@ fn parse_predicate_node_exists_2() {
 
 #[test]
 fn parse_predicate_equals_1() {
-    let fragment = "r/tron@morka == baranka";
+    let fragment = "r/tron[@morka] == baranka";
     let (_, b) = predicate_equals(fragment).expect("could not parse predicate node exists");
     assert_eq!(b.left_side.node_path.len(), 2);
     assert_eq!(b.left_side.node_path[0], "r");
@@ -83,7 +76,7 @@ fn parse_predicate_equals_1() {
 
 #[test]
 fn parse_predicate_1() {
-    let fragment = "r/tron@morka == baranka";
+    let fragment = "r/tron[@morka] == baranka";
     let (_, b) = predicate(fragment).expect("could not parse predicate node exists");
     if let Predicate::Equals(_) = b {
     } else {
@@ -103,7 +96,7 @@ fn parse_predicate_2() {
 
 #[test]
 fn parse_where_clause_1() {
-    let fragment = "where exists r/tron and exists morka and r/tron@morka == baranka";
+    let fragment = "where exists r/tron and exists morka and r/tron[@morka] == baranka";
     let (_, w) = where_clause(fragment).expect("could not parse where clause");
     assert_eq!(w.where_word, "where");
     assert_eq!(w.predicates.len(), 3);
@@ -111,7 +104,7 @@ fn parse_where_clause_1() {
 
 #[test]
 fn parse_where_clause_2() {
-    let fragment = "WhErE r/tron@morka == baranka";
+    let fragment = "WhErE r/tron[@morka] == baranka";
     let (_, w) = where_clause(fragment).expect("could not parse where clause");
     assert_eq!(w.where_word, "WhErE");
     assert_eq!(w.predicates.len(), 1);

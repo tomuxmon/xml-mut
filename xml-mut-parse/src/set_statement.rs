@@ -1,4 +1,4 @@
-use crate::where_clause::value_selector;
+use crate::where_clause::value_path;
 use nom::{
     bytes::complete::{tag_no_case, take_till},
     character::complete::{char, multispace0, multispace1},
@@ -15,7 +15,7 @@ pub fn literal_quoted_string(s: &str) -> IResult<&str, &str> {
 }
 
 pub fn value_variant(s: &str) -> IResult<&str, ValueVariant> {
-    let (s, maybe_p_node_exists) = opt(value_selector)(s)?;
+    let (s, maybe_p_node_exists) = opt(value_path)(s)?;
     Ok(if let Some(p_node_exists) = maybe_p_node_exists {
         (s, ValueVariant::Selector(p_node_exists))
     } else {
@@ -25,7 +25,7 @@ pub fn value_variant(s: &str) -> IResult<&str, ValueVariant> {
 }
 
 pub fn value_assignment(s: &str) -> IResult<&str, ValueAssignment> {
-    let (s, target) = value_selector(s)?;
+    let (s, target) = value_path(s)?;
     let (s, _) = multispace1(s)?;
     let (s, _) = tag_no_case("=")(s)?;
     let (s, _) = multispace1(s)?;

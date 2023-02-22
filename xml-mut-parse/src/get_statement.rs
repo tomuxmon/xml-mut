@@ -6,6 +6,8 @@ use nom::{
 };
 use xml_mut_data::{GetStatement, NodePath};
 
+// TODO: instead of alphanumeric use standard defined characters
+// https://www.w3.org/TR/xml/#NT-NameStartChar
 pub fn node_path(s: &str) -> IResult<&str, NodePath> {
     let (s, path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
     Ok((s, NodePath { path }))

@@ -5,7 +5,7 @@ use xml_mut_parse::prelude::*;
 fn parse_mutation_1() {
     let fragment = r###"get ItemGroup/PackageRef
 where exists version
-set @version = version@>text
+set [@version] = version[text]
 delete version"###;
 
     let (_, w) = mutation(fragment).expect("could not parse mutation");
