@@ -7,7 +7,7 @@ use nom::{
     IResult,
 };
 use xml_mut_data::{
-    Predicate, PredicateEquals, PredicateNodeExists, ValuePath, ValueSource, WhereClause,
+    NodePath, Predicate, PredicateEquals, PredicateNodeExists, ValuePath, ValueSource, WhereClause,
 };
 
 pub fn value_source(s: &str) -> IResult<&str, ValueSource> {
@@ -33,9 +33,19 @@ pub fn value_source(s: &str) -> IResult<&str, ValueSource> {
 }
 
 pub fn value_path(s: &str) -> IResult<&str, ValuePath> {
-    let (s, node_path) = node_path(s)?;
+    let (s, node_path) = opt(node_path)(s)?;
     let (s, source) = value_source(s)?;
-    Ok((s, ValuePath { node_path, source }))
+    Ok(if let Some(node_path) = node_path {
+        (s, ValuePath { node_path, source })
+    } else {
+        (
+            s,
+            ValuePath {
+                node_path: NodePath { path: vec![] },
+                source,
+            },
+        )
+    })
 }
 
 pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateNodeExists> {

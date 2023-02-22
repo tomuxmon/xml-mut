@@ -9,7 +9,7 @@ fn parse_literal_quoted_string() {
 }
 
 #[test]
-fn parse_value_variant_1() {    
+fn parse_value_variant_1() {
     let fragment = "r/tron[@morka]";
     let (_, b) = value_variant(fragment).expect("could not parse value variant");
     if let ValueVariant::Selector(_) = b {

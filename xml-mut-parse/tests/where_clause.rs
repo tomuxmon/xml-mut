@@ -2,6 +2,14 @@ use xml_mut_data::{Predicate, ValueSource};
 use xml_mut_parse::prelude::*;
 
 #[test]
+fn parse_value_selector_path0() {
+    let fragment = "[text]";
+    let (_, b) = value_path(fragment).expect("could not parse value selector");
+    assert_eq!(b.source, ValueSource::Text);
+    assert_eq!(b.node_path.len(), 0);
+}
+
+#[test]
 fn parse_value_selector_path1() {
     let fragment = "žomb/tronš[text]";
     let (_, b) = value_path(fragment).expect("could not parse value selector");
