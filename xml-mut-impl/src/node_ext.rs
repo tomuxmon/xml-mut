@@ -10,11 +10,6 @@ pub trait NodeExtensions {
 
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool;
     fn find_first_child_element(&self, node_path: &[&str]) -> Option<Box<Self>>;
-    fn find_first_child_element_aliased(
-        &self,
-        node_path: &[&str],
-        alias: &str,
-    ) -> Option<Box<Self>>;
 }
 
 impl<'a, 'input: 'a> NodeExtensions for Node<'a, 'input> {
@@ -72,21 +67,5 @@ impl<'a, 'input: 'a> NodeExtensions for Node<'a, 'input> {
             }
         }
         Some(current_node)
-    }
-
-    fn find_first_child_element_aliased(
-        &self,
-        node_path: &[&str],
-        alias: &str,
-    ) -> Option<Box<Self>> {
-        if let Some((&path_start, node_path)) = node_path.split_first() {
-            if alias.to_lowercase() == path_start.to_lowercase() {
-                self.find_first_child_element(node_path)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
     }
 }

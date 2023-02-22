@@ -8,19 +8,8 @@ use xml_mut_data::{GetStatement, NodeSelector};
 
 pub fn node_selector(s: &str) -> IResult<&str, NodeSelector> {
     let (s, path) = separated_list1(tag("/"), take_till(|c: char| !c.is_alphanumeric()))(s)?;
-    let (s, _) = multispace1(s)?;
-    let (s, as_word) = tag_no_case("as")(s)?;
-    let (s, _) = multispace1(s)?;
-    let (s, alias) = take_till(|c: char| !c.is_alphanumeric())(s)?;
 
-    Ok((
-        s,
-        NodeSelector {
-            path,
-            as_word,
-            alias,
-        },
-    ))
+    Ok((s, NodeSelector { path }))
 }
 
 pub fn get_statement(s: &str) -> IResult<&str, GetStatement> {

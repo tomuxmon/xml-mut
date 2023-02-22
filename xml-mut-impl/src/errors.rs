@@ -3,7 +3,6 @@ use crate::replacer::Replacer;
 #[derive(Debug)]
 pub enum DeleteError {
     DeleteNothing(String),
-    DeletePathShouldStartWithAlias(String),
 }
 
 #[derive(Debug)]

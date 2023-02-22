@@ -9,7 +9,7 @@ fn parse_literal_quoted_string() {
 }
 
 #[test]
-fn parse_value_variant_1() {
+fn parse_value_variant_1() {    
     let fragment = "r/tron@morka";
     let (_, b) = value_variant(fragment).expect("could not parse value variant");
     if let ValueVariant::Selector(_) = b {
@@ -45,6 +45,7 @@ fn parse_value_assignment_2() {
 
 #[test]
 fn parse_set_statement_1() {
+    // instead: SET [@Version] = Version[text]
     let fragment = "SET r/gho@>text = r/tron@morka, r/tron@morka = \"true\"";
     let (rem, b) = set_statement(fragment).expect("could not parse set statement");
     assert_eq!(rem, "");

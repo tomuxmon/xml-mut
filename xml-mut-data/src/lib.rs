@@ -1,8 +1,6 @@
 #[derive(Debug, Clone)]
 pub struct NodeSelector<'a> {
     pub path: Vec<&'a str>,
-    pub as_word: &'a str,
-    pub alias: &'a str,
 }
 
 #[derive(Debug, Clone)]

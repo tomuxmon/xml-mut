@@ -13,23 +13,20 @@ pub trait Mutable {
 impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
     fn is_fit(&self, mutation: &Mutation) -> bool {
         self.has_parent_elemnt_path(&mutation.get.node_selector.path)
-            && self.fits_predicates(
-                &mutation.where_clause.predicates,
-                mutation.get.node_selector.alias,
-            )
+            && self.fits_predicates(&mutation.where_clause.predicates)
     }
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer> {
         let mut replacers: Vec<Replacer> = vec![];
         if let Some(set_op) = mutation.set.clone() {
             for ref assignment in set_op.assignments.into_iter() {
-                match self.assign(assignment, mutation.get.node_selector.alias) {
+                match self.assign(assignment) {
                     Ok(replacer) => replacers.push(replacer),
                     Err(error) => println!("{error:?}"), // TODO: better error handling, collect maybe?
                 }
             }
         }
         if let Some(ref delete_op) = mutation.delete.clone() {
-            match self.delete(delete_op, mutation.get.node_selector.alias) {
+            match self.delete(delete_op) {
                 Ok(replacer) => replacers.push(replacer),
                 Err(error) => println!("{error:?}"), // TODO: better error handling, collect maybe?
             }
