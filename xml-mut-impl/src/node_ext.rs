@@ -1,5 +1,6 @@
 use crate::prelude::AttributeExtensions;
 use roxmltree::{Attribute, Node};
+use std::ops::Deref;
 
 pub trait NodeExtensions {
     fn get_tag_end_position(&self) -> usize;
@@ -35,23 +36,23 @@ impl<'a, 'input: 'a> NodeExtensions for Node<'a, 'input> {
     }
 
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool {
-        // TODO: rewrite using simple loop (no recursion)
-        // TODO: use node.ancestors() and zip!
-        if let Some((last, node_path_remaining)) = node_path.split_last() {
-            if self.is_element_with_name(last) {
-                if let Some(ref parent) = self.parent_element() {
-                    parent.has_parent_elemnt_path(node_path_remaining)
-                } else {
-                    node_path_remaining.is_empty()
-                }
+        let mut current_node = Box::new(Some(*self));
+        for name in node_path.iter().rev() {
+            let current = if let Some(node) = current_node.deref() {
+                node
             } else {
-                // Not an element or tag name does not match
-                false
+                return false;
+            };
+            if !current.is_element_with_name(name) {
+                return false;
             }
-        } else {
-            // NOTE: all matched so far. is fit.
-            true
+            current_node = if let Some(ref parent) = current.parent_element() {
+                Box::new(Some(*parent))
+            } else {
+                Box::new(None)
+            };
         }
+        true
     }
 
     fn find_first_child_element(&self, node_path: &[&str]) -> Option<Box<Self>> {
