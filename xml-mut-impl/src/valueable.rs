@@ -28,7 +28,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 .first_child()
                 .filter(|c| c.is_text())
                 .map(|c| c.range()),
-            ValueSource::Tail => todo!(),
+            ValueSource::Tail => self.last_child().filter(|c| c.is_text()).map(|c| c.range()),
         }
     }
 
@@ -39,7 +39,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 .get_attribute_with_name(name)
                 .map(|a| a.value().to_string()),
             ValueSource::Text => self.text().map(|t| t.to_string()),
-            ValueSource::Tail => todo!(),
+            ValueSource::Tail => self.tail().map(|t| t.to_string()),
         }
     }
 
