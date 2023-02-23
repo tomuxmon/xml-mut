@@ -13,8 +13,22 @@ pub trait Mutable {
 impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
     fn is_fit(&self, mutation: &Mutation) -> bool {
         self.has_parent_elemnt_path(&mutation.get.node_selector.path)
-            && self.fits_predicates(&mutation.where_clause.predicates)
+            && self.fits_predicates(
+                &(if let Some(w) = &mutation.where_clause {
+                    w.predicates.clone()
+                } else {
+                    vec![]
+                }),
+            )
+            && self.fits_predicates(
+                &(if let Some(set_statement) = &mutation.set {
+                    set_statement.imply_predicates()
+                } else {
+                    vec![]
+                }),
+            )
     }
+
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer> {
         let mut replacers: Vec<Replacer> = vec![];
         if let Some(set_op) = mutation.set.clone() {

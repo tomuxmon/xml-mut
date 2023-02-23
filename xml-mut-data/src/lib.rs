@@ -75,6 +75,29 @@ pub struct SetStatement<'a> {
     pub assignments: Vec<ValueAssignment<'a>>,
 }
 
+impl<'a> SetStatement<'a> {
+    pub fn imply_predicates(&self) -> Vec<Predicate<'a>> {
+        let mut predicates = Vec::new();
+        for assignment in &self.assignments {
+            if !assignment.target.node_path.is_empty() {
+                predicates.push(Predicate::NodeExists(PredicateNodeExists {
+                    node_path: assignment.target.node_path.clone(),
+                    exists_word: "exists",
+                }));
+            }
+            if let ValueVariant::Selector(value_path) = &assignment.source {
+                if !value_path.node_path.is_empty() {
+                    predicates.push(Predicate::NodeExists(PredicateNodeExists {
+                        node_path: value_path.node_path.clone(),
+                        exists_word: "exists",
+                    }));
+                }
+            }
+        }
+        predicates
+    }
+}
+
 // TODO: expect multiple node paths or value selectors in delete statrement
 // TODO: non desttructive parse of delete statement node path or value selector
 // (if not value selector just use node path)
@@ -87,7 +110,7 @@ pub struct DeleteStatement<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Mutation<'a> {
     pub get: GetStatement<'a>,
-    pub where_clause: WhereClause<'a>,
+    pub where_clause: Option<WhereClause<'a>>,
     pub set: Option<SetStatement<'a>>,
     pub delete: Option<DeleteStatement<'a>>,
 }
