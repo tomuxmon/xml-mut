@@ -76,17 +76,18 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
         }
         new_text.push_str(&self.document().input_text()[offset..node_bounds.end]);
 
-        if let Ok(doc) = Document::parse(&new_text) {
-            let node = doc.root_element();
-            if node.first_element_child().is_none()
-                && node.text().map_or(true, |t| t.trim().is_empty())
-            {
-                new_text = format!("{} {}", &new_text[0..node.get_tag_end_position()], "/>");
-            }
+        let doc = if let Ok(doc) = Document::parse(&new_text) {
+            doc
         } else {
             return Err(ReplaceError::GeneratedXmlInvalid(
                 "xml is invalid after applying replacers".to_string(),
             ));
+        };
+
+        let node = doc.root_element();
+        if node.first_element_child().is_none() && node.text().map_or(true, |t| t.trim().is_empty())
+        {
+            new_text = format!("{} {}", &new_text[0..node.get_tag_end_position()], "/>");
         }
 
         Ok(Replacer {

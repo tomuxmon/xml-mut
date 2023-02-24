@@ -62,27 +62,20 @@ fn main() {
     let opts = speed_and_distance.run();
 
     for xml_path in opts.xml_paths.clone().into_iter() {
-        let mut xml = fs::read_to_string(xml_path.clone()).expect("invalid xml path");
-
+        let xml = fs::read_to_string(xml_path.clone()).expect("invalid xml path");
+        let doc: Document = Document::parse(xml.as_str()).expect("could not parse xml");
+        let mut replacers: Vec<Replacer> = vec![];
         for xut_path in opts.xut_paths.clone().into_iter() {
-            let doc: Document = Document::parse(xml.as_str()).expect("could not parse xml");
-
             let xut = fs::read_to_string(xut_path).expect("invalid xut path");
-            let (_, mutation) =
-                mutation_surounded_multispace0(xut.as_str()).expect("could not parse mutation");
-
-            xml = if let Some(mutated_xml) = doc.mutate(&mutation) {
-                mutated_xml
-            } else {
-                println!("nothing to be mutated");
-                continue;
-            };
+            let (_, mutations) = mutations(xut.as_str()).expect("could not parse mutation");
+            replacers.append(&mut doc.get_replacers_all(mutations))
         }
-        // flush changes to disk
-        fs::write(xml_path, xml).expect("could not write xml");
+        if let Some(new_xml) = doc.replace_with(replacers) {
+            fs::write(xml_path, new_xml).expect("could not write xml");
+        } else {
+            println!("no changes");
+        }
     }
-
-    // println!("Options: {opts:?}");
 }
 
 #[derive(Clone, Debug)]
