@@ -1,4 +1,4 @@
-use crate::get_statement::node_path;
+use crate::{get_statement::node_path, set_statement::literal_quoted_string};
 use nom::{
     bytes::complete::{tag, tag_no_case, take_till},
     character::complete::multispace1,
@@ -67,7 +67,7 @@ pub fn predicate_equals(s: &str) -> IResult<&str, PredicateEquals> {
     let (s, _) = multispace1(s)?;
     let (s, _) = tag("==")(s)?;
     let (s, _) = multispace1(s)?;
-    let (s, right_side) = take_till(|c: char| !c.is_alphanumeric())(s)?;
+    let (s, right_side) = literal_quoted_string(s)?;
 
     Ok((
         s,
