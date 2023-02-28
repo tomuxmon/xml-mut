@@ -39,8 +39,8 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
                 }
             }
         }
-        if let Some(ref delete_op) = mutation.delete.clone() {
-            match self.delete(delete_op) {
+        if let Some(ref delete_statement) = mutation.delete.clone() {
+            match self.delete(&delete_statement.node_path) {
                 Ok(replacer) => replacers.push(replacer),
                 Err(error) => println!("{error:?}"), // TODO: better error handling, collect maybe?
             }

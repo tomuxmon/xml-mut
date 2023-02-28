@@ -15,7 +15,7 @@ pub trait Valueable {
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer;
 
     fn assign(&self, assignment: &ValueAssignment) -> Result<Replacer, AssignError>;
-    fn delete(&self, delete: &DeleteStatement) -> Result<Replacer, DeleteError>;
+    fn delete(&self, path: &NodePath) -> Result<Replacer, DeleteError>;
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
@@ -143,8 +143,8 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         })
     }
 
-    fn delete(&self, delete: &DeleteStatement) -> Result<Replacer, DeleteError> {
-        if let Some(deletable_node) = self.find_first_child_element(&delete.node_path) {
+    fn delete(&self, path: &NodePath) -> Result<Replacer, DeleteError> {
+        if let Some(deletable_node) = self.find_first_child_element(path) {
             Ok(Replacer {
                 bounds: deletable_node.range(),
                 replacement: "".to_string(),
