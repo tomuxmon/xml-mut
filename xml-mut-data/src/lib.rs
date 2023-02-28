@@ -54,7 +54,7 @@ pub struct PredicateNodeExists<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PredicateEquals<'a> {
     pub left_side: ValuePath<'a>,
-    pub right_side: &'a str,
+    pub right_side: ValueVariant<'a>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

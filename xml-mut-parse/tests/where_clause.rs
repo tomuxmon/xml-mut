@@ -1,4 +1,4 @@
-use xml_mut_data::{Predicate, ValueSource};
+use xml_mut_data::{Predicate, ValueSource, ValueVariant};
 use xml_mut_parse::prelude::*;
 
 #[test]
@@ -79,7 +79,7 @@ fn parse_predicate_equals_1() {
     assert_eq!(b.left_side.node_path[0], "r");
     assert_eq!(b.left_side.node_path[1], "tron");
     assert_eq!(b.left_side.source, ValueSource::Attribute("morka"));
-    assert_eq!(b.right_side, "baranka");
+    assert_eq!(b.right_side, ValueVariant::LiteralString("baranka"));
 }
 
 #[test]

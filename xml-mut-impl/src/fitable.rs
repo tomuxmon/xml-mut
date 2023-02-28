@@ -22,8 +22,16 @@ impl<'a, 'input: 'a> Fitable for Node<'a, 'input> {
             .is_some()
     }
     fn fits_predicate_equals(&self, predicate: &PredicateEquals) -> bool {
-        self.get_value(&predicate.left_side)
-            .map(|val| val == predicate.right_side)
-            .unwrap_or(false)
+        let right_side_value = if let Some(value) = self.get_value_of(&predicate.right_side) {
+            value
+        } else {
+            return false;
+        };
+        let left_side_value = if let Some(value) = self.get_value(&predicate.left_side) {
+            value
+        } else {
+            return false;
+        };
+        right_side_value == left_side_value
     }
 }
