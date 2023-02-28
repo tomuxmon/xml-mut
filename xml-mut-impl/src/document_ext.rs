@@ -12,7 +12,6 @@ pub trait DocumentExt {
         replacers
     }
     fn replace_with(&self, replacers: Vec<Replacer>) -> Option<String>;
-    fn mutate(&self, mutation: &Mutation) -> Option<String>;
 }
 
 impl<'input> DocumentExt for Document<'input> {
@@ -28,9 +27,6 @@ impl<'input> DocumentExt for Document<'input> {
     }
 
     fn replace_with(&self, replacers: Vec<Replacer>) -> Option<String> {
- 
-        // meh should also be sorted?
-        
         let mut new_xml = String::with_capacity(self.input_text().len());
         let mut offset = 0;
         let mut replacers_sorted = replacers.to_vec();
@@ -48,17 +44,5 @@ impl<'input> DocumentExt for Document<'input> {
         }
 
         Some(new_xml)
-    }
-
-    fn mutate(&self, mutation: &Mutation) -> Option<String> {
-        let mut replacers: Vec<Replacer> = vec![];
-        for node in self.descendants().filter(|n| n.is_fit(mutation)) {
-            match node.apply(mutation) {
-                Ok(replacer) => replacers.push(replacer),
-                Err(error) => println!("{error:?}"), // todo: better error handling
-            }
-        }
-
-        self.replace_with(replacers)
     }
 }
