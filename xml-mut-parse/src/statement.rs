@@ -14,6 +14,8 @@ fn block_comment(s: &str) -> IResult<&str, &str> {
     Ok((s, comment))
 }
 
+// TODO: impl line comment
+
 pub fn statement(s: &str) -> IResult<&str, Statement> {
     let (s, comment) = opt(block_comment)(s)?;
     if let Some(comment) = comment {
