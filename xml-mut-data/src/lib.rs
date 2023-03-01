@@ -114,3 +114,8 @@ pub struct Mutation<'a> {
     pub set: Option<SetStatement<'a>>,
     pub delete: Option<DeleteStatement<'a>>,
 }
+
+pub enum Statement<'a> {
+    Mutation(Mutation<'a>),
+    Comment(&'a str),
+}
