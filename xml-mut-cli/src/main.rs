@@ -46,7 +46,6 @@ fn main() {
     // multiple paths
     // single path pattern
 
-    // home/tomas/.xml-mut/item_group_1.xut
 
     let xml_paths = xml_path_many();
     let xut_paths = xut_path_many();
