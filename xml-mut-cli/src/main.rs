@@ -46,7 +46,6 @@ fn main() {
     // multiple paths
     // single path pattern
 
-
     let xml_paths = xml_path_many();
     let xut_paths = xut_path_many();
 
