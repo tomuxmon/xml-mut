@@ -1,6 +1,7 @@
 use bpaf::*;
 use roxmltree::*;
 use std::fs;
+use xml_mut_data::{Mutation, Statement};
 use xml_mut_impl::prelude::*;
 use xml_mut_parse::prelude::*;
 
@@ -45,8 +46,6 @@ fn main() {
     // multiple paths
     // single path pattern
 
-    // home/tomas/.xml-mut/item_group_1.xut
-
     let xml_paths = xml_path_many();
     let xut_paths = xut_path_many();
 
@@ -67,7 +66,15 @@ fn main() {
         let mut replacers: Vec<Replacer> = vec![];
         for xut_path in opts.xut_paths.clone().into_iter() {
             let xut = fs::read_to_string(xut_path).expect("invalid xut path");
-            let (_, mutations) = mutations(xut.as_str()).expect("could not parse mutation");
+            let (_, statements) = statements(xut.as_str()).expect("could not parse mutation");
+            let mutations = statements
+                .into_iter()
+                .filter_map(|s| match s {
+                    Statement::Mutation(rep) => Some(rep),
+                    _ => None,
+                })
+                .collect::<Vec<Mutation>>();
+
             replacers.append(&mut doc.get_replacers_all(mutations))
         }
         if let Some(new_xml) = doc.replace_with(replacers) {

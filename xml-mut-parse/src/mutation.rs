@@ -1,11 +1,5 @@
 use crate::prelude::*;
-use nom::{
-    character::complete::{multispace0, multispace1},
-    combinator::opt,
-    multi::separated_list1,
-    sequence::preceded,
-    IResult,
-};
+use nom::{character::complete::multispace1, combinator::opt, sequence::preceded, IResult};
 use xml_mut_data::Mutation;
 
 pub fn mutation(s: &str) -> IResult<&str, Mutation> {
@@ -23,18 +17,4 @@ pub fn mutation(s: &str) -> IResult<&str, Mutation> {
             delete,
         },
     ))
-}
-
-pub fn mutations(s: &str) -> IResult<&str, Vec<Mutation>> {
-    let (s, _) = multispace0(s)?;
-    let (s, res) = separated_list1(multispace1, mutation)(s)?;
-    let (s, _) = multispace0(s)?;
-    Ok((s, res))
-}
-
-pub fn mutation_surounded_multispace0(s: &str) -> IResult<&str, Mutation> {
-    let (s, _) = multispace0(s)?;
-    let (s, res) = mutation(s)?;
-    let (s, _) = multispace0(s)?;
-    Ok((s, res))
 }
