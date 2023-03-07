@@ -182,4 +182,21 @@ mod tests {
         assert_eq!(tail_range, 32..38);
         assert_eq!(&doc.input_text()[tail_range], " tail ");
     }
+
+    #[test]
+    fn get_value_bounds_02() {
+        let xml = r###"<A b="zuzu"></A>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+
+        let text_source = ValueSource::Text;
+
+        let node = doc.root().first_child().expect("first child should be A");
+
+        let text_range = node
+            .get_value_bounds(&text_source)
+            .expect("text should have empty bounds");
+
+        assert_eq!(text_range, 12..12);
+        assert_eq!(&doc.input_text()[text_range], "");
+    }
 }
