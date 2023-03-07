@@ -27,7 +27,7 @@ impl<'a, 'input: 'a> Fitable for Node<'a, 'input> {
         } else {
             return false;
         };
-        let left_side_value = if let Some(value) = self.get_value(&predicate.left_side) {
+        let left_side_value = if let Some(value) = self.get_child_value(&predicate.left_side) {
             value
         } else {
             return false;

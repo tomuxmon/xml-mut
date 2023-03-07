@@ -40,6 +40,8 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
             }
         }
         if let Some(ref delete_statement) = mutation.delete.clone() {
+            // TODO: count the number of replacers on top of this node and 
+            // when children is empty spawn another replacer triming end tag.            
             match self.delete(&delete_statement.node_path) {
                 Ok(replacer) => replacers.push(replacer),
                 Err(error) => println!("{error:?}"), // TODO: better error handling, collect maybe?

@@ -4,13 +4,16 @@ use std::ops::Range;
 use xml_mut_data::*;
 
 pub trait Valueable {
-    fn get_value(&self, selector: &ValuePath) -> Option<String>;
-    fn get_value_bounds(&self, selector: &ValuePath) -> Option<Range<usize>>;
+    fn get_value_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
 
-    fn get_value_of(&self, selector: &ValueVariant) -> Option<String>;
-
-    fn get_source_value(&self, ending: &ValueSource) -> Option<String>;
-    fn get_source_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
+    fn get_value(&self, ending: &ValueSource) -> Option<String>;
+    fn get_child_value(&self, selector: &ValuePath) -> Option<String>;
+    fn get_value_of(&self, selector: &ValueVariant) -> Option<String> {
+        match selector {
+            ValueVariant::Selector(selector) => self.get_child_value(selector),
+            ValueVariant::LiteralString(val) => Some(val.to_string()),
+        }
+    }
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer;
 
@@ -19,7 +22,7 @@ pub trait Valueable {
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
-    fn get_source_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
+    fn get_value_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
         match ending {
             ValueSource::Attribute(name) => {
                 self.get_attribute_with_name(name).map(|a| a.value_range())
@@ -32,7 +35,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
     }
 
-    fn get_source_value(&self, ending: &ValueSource) -> Option<String> {
+    fn get_value(&self, ending: &ValueSource) -> Option<String> {
         // TODO: String -> &'a str
         match ending {
             ValueSource::Attribute(name) => self
@@ -41,6 +44,11 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             ValueSource::Text => self.text().map(|t| t.to_string()),
             ValueSource::Tail => self.tail().map(|t| t.to_string()),
         }
+    }
+
+    fn get_child_value(&self, selector: &ValuePath) -> Option<String> {
+        self.find_first_child_element(&selector.node_path)
+            .and_then(|c| c.get_value(&selector.source))
     }
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer {
@@ -54,25 +62,6 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         Replacer {
             bounds: pos..pos,
             replacement,
-        }
-    }
-
-    fn get_value_bounds(&self, selector: &ValuePath) -> Option<Range<usize>> {
-        // selector.node_path should yield only a single element?
-        // select first found for now.
-        self.find_first_child_element(&selector.node_path)
-            .and_then(|c| c.get_source_bounds(&selector.source))
-    }
-
-    fn get_value(&self, selector: &ValuePath) -> Option<String> {
-        self.find_first_child_element(&selector.node_path)
-            .and_then(|c| c.get_source_value(&selector.source))
-    }
-
-    fn get_value_of(&self, selector: &ValueVariant) -> Option<String> {
-        match selector {
-            ValueVariant::Selector(selector) => self.get_value(selector),
-            ValueVariant::LiteralString(val) => Some(val.to_string()),
         }
     }
 
@@ -125,7 +114,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         // should it be automatically created or should there be an opt it?
 
         // NOTE: the rest should have a proper bounds, no more special cases
-        let bounds = match assignment_node.get_source_bounds(&assignment.target.source) {
+        let bounds = match assignment_node.get_value_bounds(&assignment.target.source) {
             Some(b) => b,
             None => {
                 return Err(AssignError::AssignmentTargetBoundsNotFound(format!(
@@ -154,5 +143,43 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 "found nothing to delete".to_string(),
             ))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_value_bounds_01() {
+        let xml = r###"<A b="zuzu"> text <B foo="bar"/> tail </A>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+
+        let attribute_source = ValueSource::Attribute("b");
+        let tail_source = ValueSource::Tail;
+        let text_source = ValueSource::Text;
+
+        let node = doc.root().first_child().expect("first child should be A");
+
+        let attribute_range = node
+            .get_value_bounds(&attribute_source)
+            .expect("attribute b should have bounds");
+
+        let text_range = node
+            .get_value_bounds(&text_source)
+            .expect("text should have bounds");
+
+        let tail_range = node
+            .get_value_bounds(&tail_source)
+            .expect("text should have bounds");
+
+        assert_eq!(attribute_range, 6..10);
+        assert_eq!(&doc.input_text()[attribute_range], "zuzu");
+
+        assert_eq!(text_range, 12..18);
+        assert_eq!(&doc.input_text()[text_range], " text ");
+
+        assert_eq!(tail_range, 32..38);
+        assert_eq!(&doc.input_text()[tail_range], " tail ");
     }
 }
