@@ -88,10 +88,11 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
     fn get_new_node_text_replacer(&self, value: String) -> Replacer {
         // here we are sure that the node is self closing element with no shildren
         let pos = self.get_tag_end_position();
+        let pos_end = self.range().end;
         let name = self.tag_name().name();
         let replacement = format!(">{value}</{name}>");
         Replacer {
-            bounds: pos..pos + 2,
+            bounds: pos..pos_end,
             replacement,
         }
     }
