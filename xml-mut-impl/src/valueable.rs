@@ -16,6 +16,7 @@ pub trait Valueable {
     }
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer;
+    fn get_new_node_text_replacer(&self, value: String) -> Replacer;
 
     fn assign(&self, assignment: &ValueAssignment) -> Result<Replacer, AssignError>;
     fn delete(&self, path: &NodePath) -> Result<Replacer, DeleteError>;
@@ -84,6 +85,17 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
     }
 
+    fn get_new_node_text_replacer(&self, value: String) -> Replacer {
+        // here we are sure that the node is self closing element with no shildren
+        let pos = self.get_tag_end_position();
+        let name = self.tag_name().name();
+        let replacement = format!(">{value}</{name}>");
+        Replacer {
+            bounds: pos..pos + 2,
+            replacement,
+        }
+    }
+
     fn assign(&self, assignment: &ValueAssignment) -> Result<Replacer, AssignError> {
         // capture all the permutations in a single struct (desired outcome : bounds wtih value to be replaced)
         // target ValueSource::Attribute (may get attribute or not, if no attribute one must be constructed)
@@ -100,11 +112,12 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         let assignment_node = match self.find_first_child_element(&assignment.target.node_path) {
             Some(node) => node,
             None => {
+                // Note: should this case also auto create text sub node if not present?
                 return Err(AssignError::AssignmentTargetNotFound(format!(
                     "Node {:?} does not contain a sub node with as path {:?}.",
                     self.tag_name(),
                     &assignment.target.node_path
-                )))
+                )));
             }
         };
 
@@ -130,7 +143,14 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
 
         // TODO: special case whan assigning to a text node of non existing node
-        // should it be automatically created or should there be an opt it?
+        // here we are sure that the node is self closing element with no shildren
+        if assignment.target.source == ValueSource::Text
+            && assignment_node
+                .get_bounds(&assignment.target.source)
+                .is_none()
+        {
+            return Ok(assignment_node.get_new_node_text_replacer(replacement));
+        }
 
         // NOTE: the rest should have a proper bounds, no more special cases
         let bounds = match assignment_node.get_bounds(&assignment.target.source) {
@@ -234,5 +254,18 @@ mod tests {
 
         assert_eq!(text_range, 12..12);
         assert_eq!(&doc.input_text()[text_range], "");
+    }
+
+    #[test]
+    fn get_new_node_text_replacer_01() {
+        let xml = r###"<A b="zuzu"/>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+        let node = doc.root().first_child().expect("first child should be A");
+        let new_text = "smooth operator";
+
+        let replacement = node.get_new_node_text_replacer(new_text.to_string());
+
+        assert_eq!(replacement.bounds, 11..13);
+        assert_eq!(replacement.replacement, ">smooth operator</A>");
     }
 }
