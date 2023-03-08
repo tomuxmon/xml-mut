@@ -4,7 +4,7 @@ use std::ops::Range;
 use xml_mut_data::*;
 
 pub trait Valueable {
-    fn get_value_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
+    fn get_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
 
     fn get_value(&self, ending: &ValueSource) -> Option<String>;
     fn get_child_value(&self, selector: &ValuePath) -> Option<String>;
@@ -22,15 +22,33 @@ pub trait Valueable {
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
-    fn get_value_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
+    fn get_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
         match ending {
             ValueSource::Attribute(name) => {
                 self.get_attribute_with_name(name).map(|a| a.value_range())
             }
-            ValueSource::Text => self
-                .first_child()
-                .filter(|c| c.is_text())
-                .map(|c| c.range()),
+            ValueSource::Text => {
+                if let Some(ch) = self.first_child() {
+                    if ch.is_text() {
+                        Some(ch.range())
+                    } else {
+                        None
+                    }
+                } else {
+                    let node_end_tag = format!("</{}>", self.tag_name().name());
+                    let node_raw_text = self.get_input_text();
+                    if node_raw_text.ends_with(node_end_tag.as_str()) {
+                        let pos = self.range().end - node_end_tag.len();
+                        Some(pos..pos)
+                    } else {
+                        None
+                    }
+                }
+                // NOTE: happy path like this does not cover ending tag positioning
+                // self.first_child()
+                //     .filter(|c| c.is_text())
+                //     .map(|c| c.range())
+            }
             ValueSource::Tail => self.last_child().filter(|c| c.is_text()).map(|c| c.range()),
         }
     }
@@ -114,7 +132,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         // should it be automatically created or should there be an opt it?
 
         // NOTE: the rest should have a proper bounds, no more special cases
-        let bounds = match assignment_node.get_value_bounds(&assignment.target.source) {
+        let bounds = match assignment_node.get_bounds(&assignment.target.source) {
             Some(b) => b,
             None => {
                 return Err(AssignError::AssignmentTargetBoundsNotFound(format!(
@@ -162,15 +180,15 @@ mod tests {
         let node = doc.root().first_child().expect("first child should be A");
 
         let attribute_range = node
-            .get_value_bounds(&attribute_source)
+            .get_bounds(&attribute_source)
             .expect("attribute b should have bounds");
 
         let text_range = node
-            .get_value_bounds(&text_source)
+            .get_bounds(&text_source)
             .expect("text should have bounds");
 
         let tail_range = node
-            .get_value_bounds(&tail_source)
+            .get_bounds(&tail_source)
             .expect("text should have bounds");
 
         assert_eq!(attribute_range, 6..10);
@@ -193,7 +211,7 @@ mod tests {
         let node = doc.root().first_child().expect("first child should be A");
 
         let text_range = node
-            .get_value_bounds(&text_source)
+            .get_bounds(&text_source)
             .expect("text should have empty bounds");
 
         assert_eq!(text_range, 12..12);
