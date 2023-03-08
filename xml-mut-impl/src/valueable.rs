@@ -28,11 +28,12 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 self.get_attribute_with_name(name).map(|a| a.value_range())
             }
             ValueSource::Text => {
-                if let Some(ch) = self.first_child() {
-                    if ch.is_text() {
-                        Some(ch.range())
+                if let Some(child) = self.first_child() {
+                    if child.is_text() {
+                        Some(child.range())
                     } else {
-                        None
+                        let pos = child.range().start;
+                        Some(pos..pos)
                     }
                 } else {
                     let node_end_tag = format!("</{}>", self.tag_name().name());
@@ -204,6 +205,23 @@ mod tests {
     #[test]
     fn get_value_bounds_02() {
         let xml = r###"<A b="zuzu"></A>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+
+        let text_source = ValueSource::Text;
+
+        let node = doc.root().first_child().expect("first child should be A");
+
+        let text_range = node
+            .get_bounds(&text_source)
+            .expect("text should have empty bounds");
+
+        assert_eq!(text_range, 12..12);
+        assert_eq!(&doc.input_text()[text_range], "");
+    }
+
+    #[test]
+    fn get_value_bounds_03() {
+        let xml = r###"<A b="zuzu"><B></B></A>"###;
         let doc = Document::parse(xml).expect("could not parse xml");
 
         let text_source = ValueSource::Text;
