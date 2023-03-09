@@ -3,6 +3,8 @@ use roxmltree::*;
 use std::ops::Range;
 use xml_mut_data::*;
 
+// TODO: String -> &'a str
+// <'a, 'input: 'a> : 'input lives longer then 'a here;
 pub trait Valueable {
     fn get_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
 
@@ -51,19 +53,31 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 //     .filter(|c| c.is_text())
                 //     .map(|c| c.range())
             }
-            ValueSource::Tail => self.last_child().filter(|c| c.is_text()).map(|c| c.range()),
+            ValueSource::Tail => {
+                if !self.is_element() {
+                    return None;
+                }
+                match self.next_sibling() {
+                    Some(node) if node.is_text() => Some(node.range()),
+                    Some(node) => {
+                        let pos = node.range().start;
+                        Some(pos..pos)
+                    }
+                    None => match self.parent_element().and_then(|p| p.next_sibling()) {
+                        Some(next) => {
+                            let pos = next.range().start;
+                            Some(pos..pos)
+                        }
+                        None => None,
+                    },
+                }
+            }
         }
     }
 
     fn get_value(&self, ending: &ValueSource) -> Option<String> {
-        // TODO: String -> &'a str
-        match ending {
-            ValueSource::Attribute(name) => self
-                .get_attribute_with_name(name)
-                .map(|a| a.value().to_string()),
-            ValueSource::Text => self.text().map(|t| t.to_string()),
-            ValueSource::Tail => self.tail().map(|t| t.to_string()),
-        }
+        self.get_bounds(ending)
+            .map(|b| self.document().input_text()[b].to_string())
     }
 
     fn get_child_value(&self, selector: &ValuePath) -> Option<String> {
