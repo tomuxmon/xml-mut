@@ -205,12 +205,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn get_value_bounds_01() {
-        let xml = r###"<A b="zuzu"> text <B foo="bar"/> tail </A>"###;
+    fn get_bounds_01() {
+        let xml = r###"<A b="zuzu"> text <B foo="bar"/> tail of B </A>"###;
         let doc = Document::parse(xml).expect("could not parse xml");
 
         let attribute_source = ValueSource::Attribute("b");
-        let tail_source = ValueSource::Tail;
         let text_source = ValueSource::Text;
 
         let node = doc.root().first_child().expect("first child should be A");
@@ -223,22 +222,15 @@ mod tests {
             .get_bounds(&text_source)
             .expect("text should have bounds");
 
-        let tail_range = node
-            .get_bounds(&tail_source)
-            .expect("text should have bounds");
-
         assert_eq!(attribute_range, 6..10);
         assert_eq!(&doc.input_text()[attribute_range], "zuzu");
 
         assert_eq!(text_range, 12..18);
         assert_eq!(&doc.input_text()[text_range], " text ");
-
-        assert_eq!(tail_range, 32..38);
-        assert_eq!(&doc.input_text()[tail_range], " tail ");
     }
 
     #[test]
-    fn get_value_bounds_02() {
+    fn get_bounds_text_01() {
         let xml = r###"<A b="zuzu"></A>"###;
         let doc = Document::parse(xml).expect("could not parse xml");
 
@@ -255,7 +247,7 @@ mod tests {
     }
 
     #[test]
-    fn get_value_bounds_03() {
+    fn get_bounds_text_02() {
         let xml = r###"<A b="zuzu"><B></B></A>"###;
         let doc = Document::parse(xml).expect("could not parse xml");
 
@@ -269,6 +261,26 @@ mod tests {
 
         assert_eq!(text_range, 12..12);
         assert_eq!(&doc.input_text()[text_range], "");
+    }
+
+    #[test]
+    fn get_bounds_tail_01() {
+        let xml = r###"<A b="zuzu"><B></B> B tail </A>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+
+        let text_source = ValueSource::Tail;
+
+        let node = doc
+            .descendants()
+            .find(|n| n.has_tag_name("B"))
+            .expect("should B");
+
+        let tail_range = node
+            .get_bounds(&text_source)
+            .expect("tail should have bounds");
+
+        assert_eq!(tail_range, 19..27);
+        assert_eq!(&doc.input_text()[tail_range], " B tail ");
     }
 
     #[test]
