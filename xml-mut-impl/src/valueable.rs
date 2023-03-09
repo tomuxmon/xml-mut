@@ -269,4 +269,18 @@ mod tests {
         assert_eq!(replacement.bounds, 11..13);
         assert_eq!(replacement.replacement, ">smooth operator</A>");
     }
+
+    #[test]
+    fn get_new_node_text_replacer_02() {
+        // 2 spaces is the test here
+        let xml = r###"<A b="zuzu"  />"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+        let node = doc.root().first_child().expect("first child should be A");
+        let new_text = "smooth operator";
+
+        let replacement = node.get_new_node_text_replacer(new_text.to_string());
+
+        assert_eq!(replacement.bounds, 11..15);
+        assert_eq!(replacement.replacement, ">smooth operator</A>");
+    }
 }
