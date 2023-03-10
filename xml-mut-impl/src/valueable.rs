@@ -128,6 +128,8 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         let replacement = match self.get_value_of(&assignment.source) {
             Some(val) => val,
             None => {
+                // NOTE: there is no predicate ensuring attribute existance yet
+                
                 return Err(AssignError::AssignmentSourceValueNotFound(format!(
                     "Node {:?} does not contain a sub node at {:?}.",
                     self.tag_name(),
@@ -237,7 +239,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
 
         // TODO: construct the value in a brutal way
         let mut path_value = String::new();
-        let last_idx = path_value.len() - 1;
+        let last_idx = remaining_path.len() - 1;
         // NOTE: opening tags
         for (i, name) in remaining_path.iter().enumerate() {
             path_value.push('<');
@@ -267,7 +269,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         // <a><g/></a> - contains sub nodes -> replacer at bounds: 3..3, replacement: new_pathed_value
         if let Some(bounds) = current_node.get_bounds(&ValueSource::Text) {
             Replacer {
-                bounds,
+                bounds: bounds.start..bounds.start,
                 replacement: path_value,
             }
         } else {

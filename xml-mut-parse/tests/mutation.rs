@@ -1,4 +1,7 @@
-use xml_mut_data::{NodePath, Predicate, PredicateNodeExists};
+use xml_mut_data::{
+    GetStatement, Mutation, NodePath, Predicate, PredicateNodeExists, SetStatement,
+    ValueAssignment, ValuePath, ValueSource, ValueVariant,
+};
 use xml_mut_parse::prelude::*;
 
 #[test]
@@ -47,4 +50,41 @@ fn parse_mutation_2() {
     assert!(w.where_clause.is_none());
     assert!(w.set.is_some());
     assert!(w.delete.is_some());
+}
+
+#[test]
+fn parse_mutation_3() {
+    let fragment = r###"GET ItemGroup/PackageReference
+SET Version[text] = [@Version]"###;
+
+    let (_, w) = mutation(fragment).expect("could not parse mutation");
+
+    assert_eq!(
+        w,
+        Mutation {
+            get: GetStatement {
+                get_word: "GET",
+                node_selector: NodePath {
+                    path: vec!["ItemGroup", "PackageReference"]
+                }
+            },
+            where_clause: None,
+            set: Some(SetStatement {
+                set_word: "SET",
+                assignments: vec![ValueAssignment {
+                    target: ValuePath {
+                        node_path: NodePath {
+                            path: vec!["Version"]
+                        },
+                        source: ValueSource::Text,
+                    },
+                    source: ValueVariant::Selector(ValuePath {
+                        node_path: NodePath { path: vec![] },
+                        source: ValueSource::Attribute("Version"),
+                    })
+                }]
+            }),
+            delete: None
+        }
+    );
 }

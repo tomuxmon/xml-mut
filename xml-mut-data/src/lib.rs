@@ -43,6 +43,7 @@ pub enum ValueSource<'a> {
 pub enum Predicate<'a> {
     NodeExists(PredicateNodeExists<'a>),
     Equals(PredicateEquals<'a>),
+    // TODO; add AttributeExists(PredicateAttributeExists)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -79,12 +80,10 @@ impl<'a> SetStatement<'a> {
     pub fn imply_predicates(&self) -> Vec<Predicate<'a>> {
         let mut predicates = Vec::new();
         for assignment in &self.assignments {
-            if !assignment.target.node_path.is_empty() {
-                predicates.push(Predicate::NodeExists(PredicateNodeExists {
-                    node_path: assignment.target.node_path.clone(),
-                    exists_word: "exists",
-                }));
-            }
+            // NOTE: assignment.target.node_path could possibly
+            // not exist and it would be constructed
+            // no need to imply predicate on it
+
             if let ValueVariant::Selector(value_path) = &assignment.source {
                 if !value_path.node_path.is_empty() {
                     predicates.push(Predicate::NodeExists(PredicateNodeExists {

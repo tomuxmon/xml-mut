@@ -62,3 +62,12 @@ fn parse_set_statement_2() {
     assert_eq!(b.set_word, "set".to_string());
     assert_eq!(b.assignments.len(), 1);
 }
+
+#[test]
+fn parse_set_statement_3() {
+    let fragment = "SET Version[text] = [@Version]";
+    let (rem, b) = set_statement(fragment).expect("could not parse set statement");
+    assert_eq!(rem, "");
+    assert_eq!(b.set_word, "SET".to_string());
+    assert_eq!(b.assignments.len(), 1);
+}
