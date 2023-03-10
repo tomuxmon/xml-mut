@@ -8,7 +8,7 @@ use xml_mut_data::*;
 pub trait Valueable {
     fn get_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
 
-    fn get_value(&self, ending: &ValueSource) -> Option<String>;
+    fn get_value(&self, ending: &ValueSource) -> Option<&str>;
     fn get_child_value(&self, selector: &ValuePath) -> Option<String>;
     fn get_value_of(&self, selector: &ValueVariant) -> Option<String> {
         match selector {
@@ -75,14 +75,14 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
     }
 
-    fn get_value(&self, ending: &ValueSource) -> Option<String> {
+    fn get_value(&self, ending: &ValueSource) -> Option<&str> {
         self.get_bounds(ending)
-            .map(|b| self.document().input_text()[b].to_string())
+            .map(|b| &self.document().input_text()[b])
     }
 
     fn get_child_value(&self, selector: &ValuePath) -> Option<String> {
         self.find_first_child_element(&selector.node_path)
-            .and_then(|c| c.get_value(&selector.source))
+            .and_then(|c| c.get_value(&selector.source).map(|v| v.to_string()))
     }
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer {
