@@ -2,6 +2,7 @@ use crate::prelude::AttributeExtensions;
 use roxmltree::{Attribute, Node};
 use std::ops::Deref;
 
+// TODO: use ExpandedName directly when comparing names 
 pub trait NodeExtensions {
     fn get_tag_end_position(&self) -> usize;
 
@@ -10,6 +11,7 @@ pub trait NodeExtensions {
     fn get_attribute_with_name(&self, name: &str) -> Option<Attribute>;
 
     fn has_parent_elemnt_path(&self, node_path: &[&str]) -> bool;
+    // TODO: play with lifetimes and get rid of this box
     fn find_first_child_element(&self, node_path: &[&str]) -> Option<Box<Self>>;
 }
 
