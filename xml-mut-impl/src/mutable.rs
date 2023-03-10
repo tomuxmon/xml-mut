@@ -31,6 +31,7 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
         if let Some(set_op) = mutation.set.clone() {
             for ref assignment in set_op.assignments.into_iter() {
                 // TODO: replacers should be inside node bounds
+                // TODO: validate replacer.bounds.is_empty()
                 match self.assign(assignment) {
                     Ok(replacer) => replacers.push(replacer),
                     Err(error) => println!("{error:?}"), // TODO: better error handling, collect maybe?
@@ -41,6 +42,7 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
             // TODO: count the number of replacers on top of this node and
             // when children is empty spawn another replacer triming end tag.
             // TODO: replacers should be inside node bounds
+            // TODO: validate replacer.bounds.is_empty()
             match self.delete(&delete_statement.node_path) {
                 Ok(replacer) => replacers.push(replacer),
                 Err(error) => println!("{error:?}"), // TODO: better error handling, collect maybe?

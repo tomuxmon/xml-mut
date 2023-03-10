@@ -25,8 +25,7 @@ impl<'input> DocumentExt for Document<'input> {
         if replacers.is_empty() {
             return None;
         }
-
-        // TODO: validate replacer.bounds.is_empty()
+        
         // TODO: validate replacer overlaps
 
         let new_len = usize::try_from(
