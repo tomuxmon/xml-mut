@@ -46,6 +46,11 @@ fn main() {
     // multiple paths
     // single path pattern
 
+
+    // TODO: in addition to xml paths
+    // folder path with desired xml extensions
+    // --folder tome/tomas/some_path --ext .csproj --ext .vbproj --ext .fsproj
+
     let xml_paths = xml_path_many();
     let xut_paths = xut_path_many();
 
@@ -79,7 +84,8 @@ fn main() {
         }
         if let Some(new_xml) = doc.apply(replacers) {
             
-            // do some post processing
+            // TODO: do some post processing
+            // trim empty nodes (self closing tags)
             // // TODO: should be separated out
             // let node = doc.root_element();
             // if node.first_element_child().is_none() && node.text().map_or(true, |t| t.trim().is_empty())
@@ -94,9 +100,7 @@ fn main() {
                 // return Err(ReplaceError::GeneratedXmlInvalid(
                 //     "xml is invalid after applying replacers".to_string(),
                 // ));
-            }
-
-            
+            }            
             
             fs::write(xml_path, new_xml).expect("could not write xml");
         } else {
