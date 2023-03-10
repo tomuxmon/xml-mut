@@ -77,7 +77,27 @@ fn main() {
 
             replacers.append(&mut doc.get_replacers_all(mutations))
         }
-        if let Some(new_xml) = doc.replace_with(replacers) {
+        if let Some(new_xml) = doc.apply(replacers) {
+            
+            // do some post processing
+            // // TODO: should be separated out
+            // let node = doc.root_element();
+            // if node.first_element_child().is_none() && node.text().map_or(true, |t| t.trim().is_empty())
+            // {
+            //     new_text = format!("{} {}", &new_text[0..node.get_tag_end_position()], "/>");
+            // }
+
+            // NOTE: reparse resulting xml to validate it.
+            if let Err(error) = Document::parse(&new_xml) {
+                print!("xml is invalid after applying replacers: {error}");
+                // return None;
+                // return Err(ReplaceError::GeneratedXmlInvalid(
+                //     "xml is invalid after applying replacers".to_string(),
+                // ));
+            }
+
+            
+            
             fs::write(xml_path, new_xml).expect("could not write xml");
         } else {
             println!("no changes");
