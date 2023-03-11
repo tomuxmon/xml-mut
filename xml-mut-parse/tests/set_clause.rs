@@ -47,7 +47,7 @@ fn parse_value_assignment_2() {
 fn parse_set_statement_1() {
     // instead: SET [@Version] = Version[text]
     let fragment = "SET r/gho[text] = r/tron[@morka], r/tron[@morka] = \"true\"";
-    let (rem, b) = set_statement(fragment).expect("could not parse set statement");
+    let (rem, b) = set_clause(fragment).expect("could not parse set statement");
     assert_eq!(rem, "");
     assert_eq!(b.set_word, "SET".to_string());
     assert_eq!(b.assignments.len(), 2);
@@ -57,7 +57,7 @@ fn parse_set_statement_1() {
 #[test]
 fn parse_set_statement_2() {
     let fragment = "set [@Version] = Version[text]";
-    let (rem, b) = set_statement(fragment).expect("could not parse set statement");
+    let (rem, b) = set_clause(fragment).expect("could not parse set statement");
     assert_eq!(rem, "");
     assert_eq!(b.set_word, "set".to_string());
     assert_eq!(b.assignments.len(), 1);
@@ -66,7 +66,7 @@ fn parse_set_statement_2() {
 #[test]
 fn parse_set_statement_3() {
     let fragment = "SET Version[text] = [@Version]";
-    let (rem, b) = set_statement(fragment).expect("could not parse set statement");
+    let (rem, b) = set_clause(fragment).expect("could not parse set statement");
     assert_eq!(rem, "");
     assert_eq!(b.set_word, "SET".to_string());
     assert_eq!(b.assignments.len(), 1);

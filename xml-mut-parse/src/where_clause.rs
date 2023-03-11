@@ -1,4 +1,4 @@
-use crate::{get_statement::node_path, set_statement::value_variant};
+use crate::{get_clause::node_path, set_clause::value_variant};
 use nom::{
     bytes::complete::{tag, tag_no_case, take_till},
     character::complete::multispace1,

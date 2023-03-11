@@ -20,7 +20,7 @@ fn parse_node_selector_path2() {
 #[test]
 fn parse_get_statement() {
     let fragment = "GeT ItemGroup/PackageRef";
-    let (_, b) = get_statement(fragment).expect("could not parse get statement");
+    let (_, b) = get_clause(fragment).expect("could not parse get statement");
     assert_eq!(b.get_word, "GeT");
     assert_eq!(b.node_selector.path.len(), 2);
     assert_eq!(b.node_selector.path[0], "ItemGroup");

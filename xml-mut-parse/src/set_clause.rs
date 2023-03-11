@@ -41,7 +41,7 @@ pub fn comma_surounded_mulispace01(s: &str) -> IResult<&str, &str> {
     Ok((s, and_word))
 }
 
-pub fn set_statement(s: &str) -> IResult<&str, SetClause> {
+pub fn set_clause(s: &str) -> IResult<&str, SetClause> {
     let (s, set_word) = tag_no_case("set")(s)?;
     let (s, _) = multispace1(s)?;
     let (s, assignments) = separated_list1(comma_surounded_mulispace01, value_assignment)(s)?;

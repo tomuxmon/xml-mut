@@ -17,7 +17,7 @@ pub fn node_path(s: &str) -> IResult<&str, NodePath> {
     Ok((s, NodePath { path }))
 }
 
-pub fn get_statement(s: &str) -> IResult<&str, GetClause> {
+pub fn get_clause(s: &str) -> IResult<&str, GetClause> {
     let (s, get_word) = tag_no_case("get")(s)?;
     let (s, _) = multispace1(s)?;
     let (s, node_selector) = node_path(s)?;
