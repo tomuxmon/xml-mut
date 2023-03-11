@@ -203,11 +203,20 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         };
 
         let bounds = if let Some(source) = maybe_source {
-            if let Some(bounds) = delete_node.get_bounds(source) {
+            if let ValueSource::Attribute(name) = source {
+                if let Some(range) = delete_node.get_attribute_with_name(name).map(|a| a.range()) {
+                    range
+                } else {
+                    return Err(DeleteError::DeleteNoBounds(format!(
+                        "Bounds do not exist for delete target attribute '{}'",
+                        name
+                    )));
+                }
+            } else if let Some(bounds) = delete_node.get_bounds(source) {
                 bounds
             } else {
                 return Err(DeleteError::DeleteNoBounds(
-                    "Bound do not exist for a delete target".to_string(),
+                    "Bounds do not exist for a delete target".to_string(),
                 ));
             }
         } else {

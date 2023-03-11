@@ -37,9 +37,10 @@ pub struct ValuePath<'a> {
     pub source: ValueSource<'a>,
 }
 
-// TODO: add name
+// TODO: rename to ValueSelector?
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueSource<'a> {
+    // TODO: NodeName
     Attribute(&'a str),
     Text,
     Tail,
