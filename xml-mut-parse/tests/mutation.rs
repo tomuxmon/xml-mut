@@ -1,5 +1,5 @@
 use xml_mut_data::{
-    GetStatement, Mutation, NodePath, Predicate, PredicateExists, SetStatement, ValueAssignment,
+    GetClause, Mutation, NodePath, Predicate, PredicateExists, SetClause, ValueAssignment,
     ValuePath, ValueSource, ValueVariant,
 };
 use xml_mut_parse::prelude::*;
@@ -12,10 +12,10 @@ set [@version] = version[text]
 delete version"###;
 
     let (_, w) = mutation(fragment).expect("could not parse mutation");
-    assert_eq!(w.get.get_word, "get");
-    assert_eq!(w.get.node_selector.path.len(), 2);
-    assert_eq!(w.get.node_selector.path[0], "ItemGroup");
-    assert_eq!(w.get.node_selector.path[1], "PackageRef");
+    assert_eq!(w.get_clause.get_word, "get");
+    assert_eq!(w.get_clause.node_selector.path.len(), 2);
+    assert_eq!(w.get_clause.node_selector.path[0], "ItemGroup");
+    assert_eq!(w.get_clause.node_selector.path[1], "PackageRef");
 
     assert!(w.where_clause.is_some());
     let where_clause = w.where_clause.unwrap();
@@ -32,8 +32,8 @@ delete version"###;
             source: None
         })
     );
-    assert!(w.set.is_some());
-    assert!(w.delete.is_some());
+    assert!(w.set_clause.is_some());
+    assert!(w.delete_clause.is_some());
 }
 
 #[test]
@@ -43,14 +43,14 @@ fn parse_mutation_2() {
     delete Version"###;
 
     let (_, w) = mutation(fragment).expect("could not parse mutation");
-    assert_eq!(w.get.get_word, "get");
-    assert_eq!(w.get.node_selector.path.len(), 2);
-    assert_eq!(w.get.node_selector.path[0], "ItemGroup");
-    assert_eq!(w.get.node_selector.path[1], "PackageReference");
+    assert_eq!(w.get_clause.get_word, "get");
+    assert_eq!(w.get_clause.node_selector.path.len(), 2);
+    assert_eq!(w.get_clause.node_selector.path[0], "ItemGroup");
+    assert_eq!(w.get_clause.node_selector.path[1], "PackageReference");
 
     assert!(w.where_clause.is_none());
-    assert!(w.set.is_some());
-    assert!(w.delete.is_some());
+    assert!(w.set_clause.is_some());
+    assert!(w.delete_clause.is_some());
 }
 
 #[test]
@@ -63,14 +63,14 @@ SET Version[text] = [@Version]"###;
     assert_eq!(
         w,
         Mutation {
-            get: GetStatement {
+            get_clause: GetClause {
                 get_word: "GET",
                 node_selector: NodePath {
                     path: vec!["ItemGroup", "PackageReference"]
                 }
             },
             where_clause: None,
-            set: Some(SetStatement {
+            set_clause: Some(SetClause {
                 set_word: "SET",
                 assignments: vec![ValueAssignment {
                     target: ValuePath {
@@ -85,7 +85,7 @@ SET Version[text] = [@Version]"###;
                     })
                 }]
             }),
-            delete: None
+            delete_clause: None
         }
     );
 }

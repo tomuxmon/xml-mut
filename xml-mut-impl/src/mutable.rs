@@ -9,7 +9,7 @@ pub trait Mutable {
 
 impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
     fn is_fit(&self, mutation: &Mutation) -> bool {
-        self.has_parent_elemnt_path(&mutation.get.node_selector.path)
+        self.has_parent_elemnt_path(&mutation.get_clause.node_selector.path)
             && self.fits_predicates(
                 &(if let Some(w) = &mutation.where_clause {
                     w.predicates.clone()
@@ -18,7 +18,7 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
                 }),
             )
             && self.fits_predicates(
-                &(if let Some(set_statement) = &mutation.set {
+                &(if let Some(set_statement) = &mutation.set_clause {
                     set_statement.imply_predicates()
                 } else {
                     vec![]
@@ -28,7 +28,7 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
 
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer> {
         let mut replacers: Vec<Replacer> = vec![];
-        if let Some(set_op) = mutation.set.clone() {
+        if let Some(set_op) = mutation.set_clause.clone() {
             for ref assignment in set_op.assignments.into_iter() {
                 // TODO: replacers should be inside node bounds
                 // TODO: validate replacer.bounds.is_empty()
@@ -38,7 +38,7 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
                 }
             }
         }
-        if let Some(ref delete_statement) = mutation.delete.clone() {
+        if let Some(ref delete_statement) = mutation.delete_clause.clone() {
             // TODO: count the number of replacers on top of this node and
             // when children is empty spawn another replacer triming end tag.
             // TODO: replacers should be inside node bounds

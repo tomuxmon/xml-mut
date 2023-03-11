@@ -14,7 +14,7 @@ impl<'a> Deref for NodePath<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GetStatement<'a> {
+pub struct GetClause<'a> {
     pub get_word: &'a str,
     pub node_selector: NodePath<'a>,
 }
@@ -48,6 +48,8 @@ pub enum Predicate<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PredicateExists<'a> {
     pub exists_word: &'a str,
+    // TODO: node_path and source could be replaced with enum
+    // could also be reused for DeleteStatement
     pub node_path: NodePath<'a>,
     pub source: Option<ValueSource<'a>>,
 }
@@ -71,12 +73,12 @@ pub struct ValueAssignment<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SetStatement<'a> {
+pub struct SetClause<'a> {
     pub set_word: &'a str,
     pub assignments: Vec<ValueAssignment<'a>>,
 }
 
-impl<'a> SetStatement<'a> {
+impl<'a> SetClause<'a> {
     pub fn imply_predicates(&self) -> Vec<Predicate<'a>> {
         let mut predicates = Vec::new();
         for assignment in &self.assignments {
@@ -102,17 +104,17 @@ impl<'a> SetStatement<'a> {
 // TODO: non desttructive parse of delete statement node path or value selector
 // (if not value selector just use node path)
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DeleteStatement<'a> {
+pub struct DeleteClause<'a> {
     pub delete_word: &'a str,
     pub node_path: NodePath<'a>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Mutation<'a> {
-    pub get: GetStatement<'a>,
+    pub get_clause: GetClause<'a>,
     pub where_clause: Option<WhereClause<'a>>,
-    pub set: Option<SetStatement<'a>>,
-    pub delete: Option<DeleteStatement<'a>>,
+    pub set_clause: Option<SetClause<'a>>,
+    pub delete_clause: Option<DeleteClause<'a>>,
 }
 
 pub enum Statement<'a> {

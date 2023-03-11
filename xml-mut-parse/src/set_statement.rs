@@ -7,7 +7,7 @@ use nom::{
     sequence::delimited,
     IResult,
 };
-use xml_mut_data::{SetStatement, ValueAssignment, ValueVariant};
+use xml_mut_data::{SetClause, ValueAssignment, ValueVariant};
 
 pub fn literal_quoted_string(s: &str) -> IResult<&str, &str> {
     let (s, res) = delimited(char('\"'), take_till(|c| c == '\"'), char('\"'))(s)?;
@@ -41,13 +41,13 @@ fn comma_surounded_mulispace01(s: &str) -> IResult<&str, &str> {
     Ok((s, and_word))
 }
 
-pub fn set_statement(s: &str) -> IResult<&str, SetStatement> {
+pub fn set_statement(s: &str) -> IResult<&str, SetClause> {
     let (s, set_word) = tag_no_case("set")(s)?;
     let (s, _) = multispace1(s)?;
     let (s, assignments) = separated_list1(comma_surounded_mulispace01, value_assignment)(s)?;
     Ok((
         s,
-        SetStatement {
+        SetClause {
             set_word,
             assignments,
         },
