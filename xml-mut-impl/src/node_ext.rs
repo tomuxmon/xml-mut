@@ -2,7 +2,7 @@ use crate::prelude::AttributeExtensions;
 use roxmltree::{Attribute, Node};
 use std::ops::Deref;
 
-// TODO: use ExpandedName directly when comparing names 
+// TODO: use ExpandedName directly when comparing names
 pub trait NodeExtensions {
     fn get_tag_end_position(&self) -> usize;
 
