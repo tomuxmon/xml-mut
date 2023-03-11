@@ -1,6 +1,6 @@
-use crate::prelude::{Mutable, Replacer};
+use crate::prelude::{Mutable, NodeExtensions, Replacer, Valueable};
 use roxmltree::Document;
-use xml_mut_data::Mutation;
+use xml_mut_data::{Mutation, ValueSource};
 
 pub trait DocumentExt {
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer>;
@@ -11,6 +11,7 @@ pub trait DocumentExt {
             .collect()
     }
     fn apply(&self, replacers: Vec<Replacer>) -> Option<String>;
+    fn get_end_tag_trim_replacers(&self) -> Vec<Replacer>;
 }
 
 impl<'input> DocumentExt for Document<'input> {
@@ -25,7 +26,7 @@ impl<'input> DocumentExt for Document<'input> {
         if replacers.is_empty() {
             return None;
         }
-        
+
         // TODO: validate replacer overlaps
 
         let new_len = usize::try_from(
@@ -47,5 +48,22 @@ impl<'input> DocumentExt for Document<'input> {
         new_xml.push_str(&self.input_text()[offset..self.input_text().len()]);
 
         Some(new_xml)
+    }
+
+    fn get_end_tag_trim_replacers(&self) -> Vec<Replacer> {
+        // from: <a></a> -> from tag_end_pos to tag_end_pos + tag_name_len + 4;;
+        // to: <a/>
+        self.descendants()
+            .filter(|n| {
+                n.is_element()
+                    && (n.get_bounds(&ValueSource::Text).is_none()
+                        || (n.first_element_child().is_none()
+                            && n.text().map_or(true, |t| t.trim().is_empty())))
+            })
+            .map(|n| Replacer {
+                bounds: n.get_tag_end_position()..n.range().end,
+                replacement: "/>".to_string(),
+            })
+            .collect()
     }
 }

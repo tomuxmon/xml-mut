@@ -46,7 +46,6 @@ fn main() {
     // multiple paths
     // single path pattern
 
-
     // TODO: in addition to xml paths
     // folder path with desired xml extensions
     // --folder tome/tomas/some_path --ext .csproj --ext .vbproj --ext .fsproj
@@ -83,26 +82,28 @@ fn main() {
             replacers.append(&mut doc.get_replacers_all(mutations))
         }
         if let Some(new_xml) = doc.apply(replacers) {
-            
-            // TODO: do some post processing
-            // trim empty nodes (self closing tags)
-            // // TODO: should be separated out
-            // let node = doc.root_element();
-            // if node.first_element_child().is_none() && node.text().map_or(true, |t| t.trim().is_empty())
-            // {
-            //     new_text = format!("{} {}", &new_text[0..node.get_tag_end_position()], "/>");
-            // }
-
             // NOTE: reparse resulting xml to validate it.
-            if let Err(error) = Document::parse(&new_xml) {
-                print!("xml is invalid after applying replacers: {error}");
-                // return None;
-                // return Err(ReplaceError::GeneratedXmlInvalid(
-                //     "xml is invalid after applying replacers".to_string(),
-                // ));
-            }            
-            
-            fs::write(xml_path, new_xml).expect("could not write xml");
+            let new_doc = match Document::parse(&new_xml) {
+                Ok(d) => d,
+                Err(error) => {
+                    // return None;
+                    // return Err(ReplaceError::GeneratedXmlInvalid(
+                    //     "xml is invalid after applying replacers".to_string(),
+                    // ));
+                    print!("xml is invalid after applying replacers: {error}");
+                    return;
+                }
+            };
+
+            // NOTE: post processing
+            let trim_replacers = new_doc.get_end_tag_trim_replacers();
+            let final_text = if let Some(n) = new_doc.apply(trim_replacers) {
+                n
+            } else {
+                new_xml
+            };
+
+            fs::write(xml_path, final_text).expect("could not write xml");
         } else {
             println!("no changes");
         }
