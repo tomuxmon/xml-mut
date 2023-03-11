@@ -6,7 +6,7 @@ pub fn mutation(s: &str) -> IResult<&str, Mutation> {
     let (s, get_clause) = get_statement(s)?;
     let (s, where_clause) = opt(preceded(multispace1, where_clause))(s)?;
     let (s, set_clause) = opt(preceded(multispace1, set_statement))(s)?;
-    let (s, delete_clause) = opt(preceded(multispace1, delete_statement))(s)?;
+    let (s, delete_clause) = opt(preceded(multispace1, delete_clause))(s)?;
 
     Ok((
         s,
