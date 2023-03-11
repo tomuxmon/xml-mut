@@ -1,6 +1,6 @@
 use crate::prelude::{NodeExtensions, Valueable};
 use roxmltree::Node;
-use xml_mut_data::{Predicate, PredicateEquals, PredicateNodeExists};
+use xml_mut_data::{Predicate, PredicateEquals, PredicateExists};
 
 pub trait Fitable {
     fn fits_predicates(&self, predicates: &[Predicate]) -> bool {
@@ -8,16 +8,16 @@ pub trait Fitable {
     }
     fn fits_predicate(&self, predicate: &Predicate) -> bool {
         match predicate {
-            Predicate::NodeExists(p) => self.fits_predicate_exists(p),
+            Predicate::Exists(p) => self.fits_predicate_exists(p),
             Predicate::Equals(p) => self.fits_predicate_equals(p),
         }
     }
-    fn fits_predicate_exists(&self, predicate: &PredicateNodeExists) -> bool;
+    fn fits_predicate_exists(&self, predicate: &PredicateExists) -> bool;
     fn fits_predicate_equals(&self, predicate: &PredicateEquals) -> bool;
 }
 
 impl<'a, 'input: 'a> Fitable for Node<'a, 'input> {
-    fn fits_predicate_exists(&self, predicate: &PredicateNodeExists) -> bool {
+    fn fits_predicate_exists(&self, predicate: &PredicateExists) -> bool {
         self.find_first_child_element(&predicate.node_path)
             .is_some()
     }

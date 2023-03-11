@@ -96,7 +96,7 @@ fn parse_predicate_1() {
 fn parse_predicate_2() {
     let fragment = "exists r/tron";
     let (_, b) = predicate(fragment).expect("could not parse predicate node exists");
-    if let Predicate::NodeExists(_) = b {
+    if let Predicate::Exists(_) = b {
     } else {
         panic!("could not parse predicate node exists");
     }

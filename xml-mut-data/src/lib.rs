@@ -41,15 +41,15 @@ pub enum ValueSource<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Predicate<'a> {
-    NodeExists(PredicateNodeExists<'a>),
+    Exists(PredicateExists<'a>),
     Equals(PredicateEquals<'a>),
-    // TODO; add AttributeExists(PredicateAttributeExists)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PredicateNodeExists<'a> {
+pub struct PredicateExists<'a> {
     pub exists_word: &'a str,
     pub node_path: NodePath<'a>,
+    pub source: Option<ValueSource<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -86,9 +86,11 @@ impl<'a> SetStatement<'a> {
 
             if let ValueVariant::Selector(value_path) = &assignment.source {
                 if !value_path.node_path.is_empty() {
-                    predicates.push(Predicate::NodeExists(PredicateNodeExists {
+                    predicates.push(Predicate::Exists(PredicateExists {
                         node_path: value_path.node_path.clone(),
                         exists_word: "exists",
+                        // todo: add source maybe
+                        source: None,
                     }));
                 }
             }

@@ -7,7 +7,7 @@ use nom::{
     IResult,
 };
 use xml_mut_data::{
-    NodePath, Predicate, PredicateEquals, PredicateNodeExists, ValuePath, ValueSource, WhereClause,
+    NodePath, Predicate, PredicateEquals, PredicateExists, ValuePath, ValueSource, WhereClause,
 };
 
 pub fn value_source(s: &str) -> IResult<&str, ValueSource> {
@@ -48,16 +48,18 @@ pub fn value_path(s: &str) -> IResult<&str, ValuePath> {
     })
 }
 
-pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateNodeExists> {
+pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateExists> {
     let (s, exists_word) = tag_no_case("exists")(s)?;
     let (s, _) = multispace1(s)?;
     let (s, node_path) = node_path(s)?;
+    let (s, source) = opt(value_source)(s)?;
 
     Ok((
         s,
-        PredicateNodeExists {
+        PredicateExists {
             exists_word,
             node_path,
+            source,
         },
     ))
 }
@@ -82,7 +84,7 @@ pub fn predicate(s: &str) -> IResult<&str, Predicate> {
     let (s, maybe_p_node_exists) = opt(predicate_node_exists)(s)?;
 
     Ok(if let Some(p_node_exists) = maybe_p_node_exists {
-        (s, Predicate::NodeExists(p_node_exists))
+        (s, Predicate::Exists(p_node_exists))
     } else {
         let (s, p_equals) = predicate_equals(s)?;
         (s, Predicate::Equals(p_equals))
