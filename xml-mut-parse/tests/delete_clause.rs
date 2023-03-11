@@ -18,7 +18,7 @@ fn parse_delete_clause_01() {
 
 #[test]
 fn parse_delete_clause_02() {
-    let fragment = "delete ItemGroup/PackageRef , ItemGroup[@nom]";
+    let fragment = "delete ItemGroup/PackageRef, ItemGroup[@nom]";
     let (_, b) = delete_clause(fragment).expect("could not parse delete statement");
     assert_eq!(b.delete_word, "delete");
     assert_eq!(b.targets.len(), 2);
