@@ -8,7 +8,6 @@ pub enum DeleteError {
 
 #[derive(Debug)]
 pub enum AssignError {
-    AssignmentTargetNotFound(String),
     AssignmentSourceValueNotFound(String),
     AssignmentTargetBoundsNotFound(String),
 }
