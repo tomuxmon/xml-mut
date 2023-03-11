@@ -89,8 +89,7 @@ impl<'a> SetStatement<'a> {
                     predicates.push(Predicate::Exists(PredicateExists {
                         node_path: value_path.node_path.clone(),
                         exists_word: "exists",
-                        // todo: add source maybe
-                        source: None,
+                        source: Some(value_path.source.clone()),
                     }));
                 }
             }

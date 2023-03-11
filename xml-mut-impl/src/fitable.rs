@@ -18,8 +18,17 @@ pub trait Fitable {
 
 impl<'a, 'input: 'a> Fitable for Node<'a, 'input> {
     fn fits_predicate_exists(&self, predicate: &PredicateExists) -> bool {
-        self.find_first_child_element(&predicate.node_path)
-            .is_some()
+        let child_node = if let Some(node) = self.find_first_child_element(&predicate.node_path) {
+            node
+        } else {
+            return false;
+        };
+        let value_source = if let Some(ref value_source) = predicate.source {
+            value_source
+        } else {
+            return false;
+        };
+        child_node.get_bounds(value_source).is_some()
     }
     fn fits_predicate_equals(&self, predicate: &PredicateEquals) -> bool {
         let right_side_value = if let Some(value) = self.get_value_of(&predicate.right_side) {
