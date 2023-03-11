@@ -33,7 +33,7 @@ pub fn value_assignment(s: &str) -> IResult<&str, ValueAssignment> {
     Ok((s, ValueAssignment { target, source }))
 }
 
-fn comma_surounded_mulispace01(s: &str) -> IResult<&str, &str> {
+pub fn comma_surounded_mulispace01(s: &str) -> IResult<&str, &str> {
     let (s, _) = multispace0(s)?;
     let (s, and_word) = tag_no_case(",")(s)?;
     let (s, _) = multispace1(s)?;

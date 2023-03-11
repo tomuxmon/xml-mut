@@ -3,6 +3,7 @@ use crate::replacer::Replacer;
 #[derive(Debug)]
 pub enum DeleteError {
     DeleteNothing(String),
+    DeleteNoBounds(String),
 }
 
 #[derive(Debug)]

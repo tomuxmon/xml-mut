@@ -22,7 +22,7 @@ pub trait Valueable {
     fn get_new_sub_replacer(&self, path: &ValuePath, value: String) -> Replacer;
 
     fn assign(&self, assignment: &ValueAssignment) -> Result<Replacer, AssignError>;
-    fn delete(&self, path: &NodePath) -> Result<Replacer, DeleteError>;
+    fn delete(&self, path: &PathVariant) -> Result<Replacer, DeleteError>;
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
@@ -129,12 +129,12 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             Some(val) => val,
             None => {
                 // NOTE: there is no predicate ensuring attribute existance yet
-                
+
                 return Err(AssignError::AssignmentSourceValueNotFound(format!(
                     "Node {:?} does not contain a sub node at {:?}.",
                     self.tag_name(),
                     &assignment.source
-                )))
+                )));
             }
         };
 
@@ -188,17 +188,36 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         })
     }
 
-    fn delete(&self, path: &NodePath) -> Result<Replacer, DeleteError> {
-        if let Some(deletable_node) = self.find_first_child_element(path) {
-            Ok(Replacer {
-                bounds: deletable_node.range(),
-                replacement: "".to_string(),
-            })
+    fn delete(&self, path_variant: &PathVariant) -> Result<Replacer, DeleteError> {
+        let (path, maybe_source) = match path_variant {
+            PathVariant::Value(v) => (&v.node_path, Some(&v.source)),
+            PathVariant::Path(p) => (p, None),
+        };
+
+        let delete_node = if let Some(node) = self.find_first_child_element(path) {
+            node
         } else {
-            Err(DeleteError::DeleteNothing(
-                "found nothing to delete".to_string(),
-            ))
-        }
+            return Err(DeleteError::DeleteNothing(
+                "Delete target node not found.".to_string(),
+            ));
+        };
+
+        let bounds = if let Some(source) = maybe_source {
+            if let Some(bounds) = delete_node.get_bounds(source) {
+                bounds
+            } else {
+                return Err(DeleteError::DeleteNoBounds(
+                    "Bound do not exist for a delete target".to_string(),
+                ));
+            }
+        } else {
+            delete_node.range()
+        };
+
+        Ok(Replacer {
+            bounds,
+            replacement: "".to_string(),
+        })
     }
 
     fn get_new_sub_replacer(&self, path: &ValuePath, value: String) -> Replacer {

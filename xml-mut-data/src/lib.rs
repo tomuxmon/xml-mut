@@ -26,6 +26,12 @@ pub enum ValueVariant<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PathVariant<'a> {
+    Path(NodePath<'a>),
+    Value(ValuePath<'a>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ValuePath<'a> {
     pub node_path: NodePath<'a>,
     pub source: ValueSource<'a>,
@@ -48,8 +54,7 @@ pub enum Predicate<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PredicateExists<'a> {
     pub exists_word: &'a str,
-    // TODO: node_path and source could be replaced with enum
-    // could also be reused for DeleteStatement
+    // TODO: use PathVariant instead
     pub node_path: NodePath<'a>,
     pub source: Option<ValueSource<'a>>,
 }
@@ -100,13 +105,10 @@ impl<'a> SetClause<'a> {
     }
 }
 
-// TODO: expect multiple node paths or value selectors in delete statrement
-// TODO: non desttructive parse of delete statement node path or value selector
-// (if not value selector just use node path)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DeleteClause<'a> {
     pub delete_word: &'a str,
-    pub node_path: NodePath<'a>,
+    pub targets: Vec<PathVariant<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

@@ -43,9 +43,12 @@ impl<'a, 'input: 'a> Mutable for Node<'a, 'input> {
             // when children is empty spawn another replacer triming end tag.
             // TODO: replacers should be inside node bounds
             // TODO: validate replacer.bounds.is_empty()
-            match self.delete(&delete_clause.node_path) {
-                Ok(replacer) => replacers.push(replacer),
-                Err(error) => println!("{error:?}"), // TODO: better error handling, collect maybe?
+
+            for path_var in &delete_clause.targets {
+                match self.delete(path_var) {
+                    Ok(replacer) => replacers.push(replacer),
+                    Err(error) => println!("{error:?}"), // TODO: better error handling, collect maybe?
+                }
             }
         }
         replacers

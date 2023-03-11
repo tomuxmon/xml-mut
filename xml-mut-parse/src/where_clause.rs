@@ -7,7 +7,8 @@ use nom::{
     IResult,
 };
 use xml_mut_data::{
-    NodePath, Predicate, PredicateEquals, PredicateExists, ValuePath, ValueSource, WhereClause,
+    NodePath, PathVariant, Predicate, PredicateEquals, PredicateExists, ValuePath, ValueSource,
+    WhereClause,
 };
 
 pub fn value_source(s: &str) -> IResult<&str, ValueSource> {
@@ -46,6 +47,17 @@ pub fn value_path(s: &str) -> IResult<&str, ValuePath> {
             },
         )
     })
+}
+
+// TODO: non desttructive parse of node path or value selector
+pub fn path_variant(s: &str) -> IResult<&str, PathVariant> {
+    let (s, value) = opt(value_path)(s)?;
+    if let Some(value) = value {
+        Ok((s, PathVariant::Value(value)))
+    } else {
+        let (s, path) = node_path(s)?;
+        Ok((s, PathVariant::Path(path)))
+    }
 }
 
 pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateExists> {
