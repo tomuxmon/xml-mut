@@ -1,4 +1,4 @@
-use xml_mut_data::{NodePath, PathVariant, ValuePath, ValueSource};
+use xml_mut_data::{NodePath, PathVariant, ValuePath, ValueSelector};
 use xml_mut_parse::prelude::*;
 
 #[test]
@@ -10,7 +10,7 @@ fn parse_delete_clause_01() {
 
     assert_eq!(
         b.targets[0],
-        PathVariant::Path(NodePath {
+        PathVariant::Node(NodePath {
             path: vec!["ItemGroup", "PackageRef", "fomo"]
         })
     );
@@ -25,7 +25,7 @@ fn parse_delete_clause_02() {
 
     assert_eq!(
         b.targets[0],
-        PathVariant::Path(NodePath {
+        PathVariant::Node(NodePath {
             path: vec!["ItemGroup", "PackageRef"]
         })
     );
@@ -36,7 +36,7 @@ fn parse_delete_clause_02() {
             node_path: NodePath {
                 path: vec!["ItemGroup"]
             },
-            source: ValueSource::Attribute("nom")
+            selector: ValueSelector::Attribute("nom")
         })
     );
 }

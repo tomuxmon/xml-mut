@@ -19,8 +19,8 @@ pub trait Fitable {
 impl<'a, 'input: 'a> Fitable for Node<'a, 'input> {
     fn fits_predicate_exists(&self, predicate: &PredicateExists) -> bool {
         let (path, source_maybe) = match &predicate.path {
-            xml_mut_data::PathVariant::Path(p) => (p, None),
-            xml_mut_data::PathVariant::Value(v) => (&v.node_path, Some(&v.source)),
+            xml_mut_data::PathVariant::Node(p) => (p, None),
+            xml_mut_data::PathVariant::Value(v) => (&v.node_path, Some(&v.selector)),
         };
         let child_node = if let Some(node) = self.find_first_child_element(path) {
             node

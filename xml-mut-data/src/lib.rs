@@ -14,9 +14,17 @@ impl<'a> Deref for NodePath<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct GetClause<'a> {
-    pub get_word: &'a str,
-    pub node_selector: NodePath<'a>,
+pub enum ValueSelector<'a> {
+    // TODO: NodeName
+    Attribute(&'a str),
+    Text,
+    Tail,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ValuePath<'a> {
+    pub node_path: NodePath<'a>,
+    pub selector: ValueSelector<'a>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -27,29 +35,14 @@ pub enum ValueVariant<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PathVariant<'a> {
-    Path(NodePath<'a>),
+    Node(NodePath<'a>),
     Value(ValuePath<'a>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ValuePath<'a> {
-    pub node_path: NodePath<'a>,
-    pub source: ValueSource<'a>,
-}
-
-// TODO: rename to ValueSelector?
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ValueSource<'a> {
-    // TODO: NodeName
-    Attribute(&'a str),
-    Text,
-    Tail,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Predicate<'a> {
-    Exists(PredicateExists<'a>),
-    Equals(PredicateEquals<'a>),
+pub struct ValueAssignment<'a> {
+    pub target: ValuePath<'a>,
+    pub source: ValueVariant<'a>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -65,15 +58,21 @@ pub struct PredicateEquals<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct WhereClause<'a> {
-    pub where_word: &'a str,
-    pub predicates: Vec<Predicate<'a>>,
+pub enum Predicate<'a> {
+    Exists(PredicateExists<'a>),
+    Equals(PredicateEquals<'a>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ValueAssignment<'a> {
-    pub target: ValuePath<'a>,
-    pub source: ValueVariant<'a>,
+pub struct GetClause<'a> {
+    pub get_word: &'a str,
+    pub node_selector: NodePath<'a>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WhereClause<'a> {
+    pub where_word: &'a str,
+    pub predicates: Vec<Predicate<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

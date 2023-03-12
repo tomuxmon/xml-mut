@@ -1,11 +1,11 @@
-use xml_mut_data::{NodePath, PathVariant, Predicate, ValueSource, ValueVariant};
+use xml_mut_data::{NodePath, PathVariant, Predicate, ValueSelector, ValueVariant};
 use xml_mut_parse::prelude::*;
 
 #[test]
 fn parse_value_selector_path0() {
     let fragment = "[text]";
     let (_, b) = value_path(fragment).expect("could not parse value selector");
-    assert_eq!(b.source, ValueSource::Text);
+    assert_eq!(b.selector, ValueSelector::Text);
     assert_eq!(b.node_path.len(), 0);
 }
 
@@ -13,7 +13,7 @@ fn parse_value_selector_path0() {
 fn parse_value_selector_path1() {
     let fragment = "žomb/tronš[text]";
     let (_, b) = value_path(fragment).expect("could not parse value selector");
-    assert_eq!(b.source, ValueSource::Text);
+    assert_eq!(b.selector, ValueSelector::Text);
     assert_eq!(b.node_path.len(), 2);
     assert_eq!(b.node_path[0], "žomb");
     assert_eq!(b.node_path[1], "tronš");
@@ -23,7 +23,7 @@ fn parse_value_selector_path1() {
 fn parse_value_selector_path2() {
     let fragment = "r/tron[@morka]";
     let (_, b) = value_path(fragment).expect("could not parse value selector");
-    assert_eq!(b.source, ValueSource::Attribute("morka"));
+    assert_eq!(b.selector, ValueSelector::Attribute("morka"));
     assert_eq!(b.node_path.len(), 2);
     assert_eq!(b.node_path[0], "r");
     assert_eq!(b.node_path[1], "tron");
@@ -33,14 +33,14 @@ fn parse_value_selector_path2() {
 fn parse_value_selector_ending_1() {
     let fragment = "[text]";
     let (_, b) = value_source(fragment).expect("could not parse node text value selector ending");
-    assert_eq!(b, ValueSource::Text);
+    assert_eq!(b, ValueSelector::Text);
 }
 
 #[test]
 fn parse_value_selector_ending_3() {
     let fragment = "[tail]";
     let (_, b) = value_source(fragment).expect("could not parse node text value selector ending");
-    assert_eq!(b, ValueSource::Tail);
+    assert_eq!(b, ValueSelector::Tail);
 }
 
 #[test]
@@ -48,7 +48,7 @@ fn parse_value_selector_ending_2() {
     let fragment = "[@version]";
     let (_, b) =
         value_source(fragment).expect("could not parse attribute name value selector ending");
-    assert_eq!(b, ValueSource::Attribute("version"));
+    assert_eq!(b, ValueSelector::Attribute("version"));
 }
 
 #[test]
@@ -59,7 +59,7 @@ fn parse_predicate_node_exists_1() {
 
     assert_eq!(
         b.path,
-        PathVariant::Path(NodePath {
+        PathVariant::Node(NodePath {
             path: vec!["version"]
         })
     );
@@ -72,7 +72,7 @@ fn parse_predicate_node_exists_2() {
     assert_eq!(b.exists_word, "exists");
     assert_eq!(
         b.path,
-        PathVariant::Path(NodePath {
+        PathVariant::Node(NodePath {
             path: vec!["ItemGroup", "ReferenceŲ", "verŠion"]
         })
     );
@@ -85,7 +85,7 @@ fn parse_predicate_equals_1() {
     assert_eq!(b.left_side.node_path.len(), 2);
     assert_eq!(b.left_side.node_path[0], "r");
     assert_eq!(b.left_side.node_path[1], "tron");
-    assert_eq!(b.left_side.source, ValueSource::Attribute("morka"));
+    assert_eq!(b.left_side.selector, ValueSelector::Attribute("morka"));
     assert_eq!(b.right_side, ValueVariant::LiteralString("baranka"));
 }
 

@@ -1,4 +1,4 @@
-use xml_mut_data::{ValueSource, ValueVariant};
+use xml_mut_data::{ValueSelector, ValueVariant};
 use xml_mut_parse::prelude::*;
 
 #[test]
@@ -22,7 +22,7 @@ fn parse_value_variant_1() {
 fn parse_value_assignment_1() {
     let fragment = "r/tron[@morka] = \"true\"";
     let (_, b) = value_assignment(fragment).expect("could not parse value assignment");
-    assert_eq!(b.target.source, ValueSource::Attribute("morka"));
+    assert_eq!(b.target.selector, ValueSelector::Attribute("morka"));
     assert_eq!(b.target.node_path.len(), 2);
     assert_eq!(b.target.node_path[0], "r");
     assert_eq!(b.target.node_path[1], "tron");
@@ -33,7 +33,7 @@ fn parse_value_assignment_1() {
 fn parse_value_assignment_2() {
     let fragment = "r/tron[@morka] = r/balbon[text]";
     let (_, b) = value_assignment(fragment).expect("could not parse value assignment");
-    assert_eq!(b.target.source, ValueSource::Attribute("morka"));
+    assert_eq!(b.target.selector, ValueSelector::Attribute("morka"));
     assert_eq!(b.target.node_path.len(), 2);
     assert_eq!(b.target.node_path[0], "r");
     assert_eq!(b.target.node_path[1], "tron");

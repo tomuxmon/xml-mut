@@ -7,22 +7,22 @@ use nom::{
     IResult,
 };
 use xml_mut_data::{
-    NodePath, PathVariant, Predicate, PredicateEquals, PredicateExists, ValuePath, ValueSource,
+    NodePath, PathVariant, Predicate, PredicateEquals, PredicateExists, ValuePath, ValueSelector,
     WhereClause,
 };
 
-pub fn value_source(s: &str) -> IResult<&str, ValueSource> {
+pub fn value_source(s: &str) -> IResult<&str, ValueSelector> {
     let (s, _) = tag("[")(s)?;
     let (s, at) = opt(tag("@"))(s)?;
     let (s, name) = take_till(|c: char| c == ']')(s)?;
     let (s, _) = tag("]")(s)?;
 
     Ok(if at.is_some() {
-        (s, ValueSource::Attribute(name))
+        (s, ValueSelector::Attribute(name))
     } else {
         match name {
-            "text" => (s, ValueSource::Text),
-            "tail" => (s, ValueSource::Tail),
+            "text" => (s, ValueSelector::Text),
+            "tail" => (s, ValueSelector::Tail),
             _ => {
                 return Err(nom::Err::Error(nom::error::Error {
                     code: nom::error::ErrorKind::Tag,
@@ -37,13 +37,19 @@ pub fn value_path(s: &str) -> IResult<&str, ValuePath> {
     let (s, node_path) = opt(node_path)(s)?;
     let (s, source) = value_source(s)?;
     Ok(if let Some(node_path) = node_path {
-        (s, ValuePath { node_path, source })
+        (
+            s,
+            ValuePath {
+                node_path,
+                selector: source,
+            },
+        )
     } else {
         (
             s,
             ValuePath {
                 node_path: NodePath { path: vec![] },
-                source,
+                selector: source,
             },
         )
     })
@@ -56,7 +62,7 @@ pub fn path_variant(s: &str) -> IResult<&str, PathVariant> {
         Ok((s, PathVariant::Value(value)))
     } else {
         let (s, path) = node_path(s)?;
-        Ok((s, PathVariant::Path(path)))
+        Ok((s, PathVariant::Node(path)))
     }
 }
 

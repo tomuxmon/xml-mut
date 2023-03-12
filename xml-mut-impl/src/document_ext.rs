@@ -1,6 +1,6 @@
 use crate::prelude::{Mutable, NodeExtensions, Replacer, Valueable};
 use roxmltree::Document;
-use xml_mut_data::{Mutation, ValueSource};
+use xml_mut_data::{Mutation, ValueSelector};
 
 pub trait DocumentExt {
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer>;
@@ -56,7 +56,7 @@ impl<'input> DocumentExt for Document<'input> {
         self.descendants()
             .filter(|n| {
                 n.is_element()
-                    && (n.get_bounds(&ValueSource::Text).is_none()
+                    && (n.get_bounds(&ValueSelector::Text).is_none()
                         || (n.first_element_child().is_none()
                             && n.text().map_or(true, |t| t.trim().is_empty())))
             })

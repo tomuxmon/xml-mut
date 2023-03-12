@@ -6,9 +6,9 @@ use xml_mut_data::*;
 // TODO: String -> &'a str
 // <'a, 'input: 'a> : 'input lives longer then 'a here;
 pub trait Valueable {
-    fn get_bounds(&self, ending: &ValueSource) -> Option<Range<usize>>;
+    fn get_bounds(&self, ending: &ValueSelector) -> Option<Range<usize>>;
 
-    fn get_value(&self, ending: &ValueSource) -> Option<&str>;
+    fn get_value(&self, ending: &ValueSelector) -> Option<&str>;
     fn get_child_value(&self, selector: &ValuePath) -> Option<String>;
     fn get_value_of(&self, selector: &ValueVariant) -> Option<String> {
         match selector {
@@ -26,12 +26,12 @@ pub trait Valueable {
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
-    fn get_bounds(&self, ending: &ValueSource) -> Option<Range<usize>> {
+    fn get_bounds(&self, ending: &ValueSelector) -> Option<Range<usize>> {
         match ending {
-            ValueSource::Attribute(name) => {
+            ValueSelector::Attribute(name) => {
                 self.get_attribute_with_name(name).map(|a| a.value_range())
             }
-            ValueSource::Text => {
+            ValueSelector::Text => {
                 if let Some(child) = self.first_child() {
                     if child.is_text() {
                         Some(child.range())
@@ -54,7 +54,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 //     .filter(|c| c.is_text())
                 //     .map(|c| c.range())
             }
-            ValueSource::Tail => {
+            ValueSelector::Tail => {
                 if !self.is_element() {
                     return None;
                 }
@@ -76,14 +76,14 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         }
     }
 
-    fn get_value(&self, ending: &ValueSource) -> Option<&str> {
+    fn get_value(&self, ending: &ValueSelector) -> Option<&str> {
         self.get_bounds(ending)
             .map(|b| &self.document().input_text()[b])
     }
 
     fn get_child_value(&self, selector: &ValuePath) -> Option<String> {
         self.find_first_child_element(&selector.node_path)
-            .and_then(|c| c.get_value(&selector.source).map(|v| v.to_string()))
+            .and_then(|c| c.get_value(&selector.selector).map(|v| v.to_string()))
     }
 
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer {
@@ -147,7 +147,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
 
         // NOTE: special case when attribute does not exist
         // and we need to construct it
-        if let ValueSource::Attribute(attribute_name) = assignment.target.source {
+        if let ValueSelector::Attribute(attribute_name) = assignment.target.selector {
             if assignment_node
                 .get_attribute_with_name(attribute_name)
                 .is_none()
@@ -160,9 +160,9 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         // directly under assignment node.
         // here we are sure that the node is
         // self closing element with no children
-        if assignment.target.source == ValueSource::Text
+        if assignment.target.selector == ValueSelector::Text
             && assignment_node
-                .get_bounds(&assignment.target.source)
+                .get_bounds(&assignment.target.selector)
                 .is_none()
         {
             return Ok(assignment_node.get_new_node_text_replacer(replacement));
@@ -170,14 +170,14 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
 
         // NOTE: the rest should have a proper bounds,
         // no more special cases
-        let bounds = match assignment_node.get_bounds(&assignment.target.source) {
+        let bounds = match assignment_node.get_bounds(&assignment.target.selector) {
             Some(b) => b,
             None => {
                 return Err(AssignError::AssignmentTargetBoundsNotFound(format!(
                     "Assignment Node {:?} could not produce valid target bounds. Path {:?}, source {:?}.",
                     assignment_node.tag_name(),
                     &assignment.target.node_path,
-                    &assignment.target.source
+                    &assignment.target.selector
                 )))
             }
         };
@@ -190,8 +190,8 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
 
     fn delete(&self, path_variant: &PathVariant) -> Result<Replacer, DeleteError> {
         let (path, maybe_source) = match path_variant {
-            PathVariant::Value(v) => (&v.node_path, Some(&v.source)),
-            PathVariant::Path(p) => (p, None),
+            PathVariant::Value(v) => (&v.node_path, Some(&v.selector)),
+            PathVariant::Node(p) => (p, None),
         };
 
         let delete_node = if let Some(node) = self.find_first_child_element(path) {
@@ -203,7 +203,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         };
 
         let bounds = if let Some(source) = maybe_source {
-            if let ValueSource::Attribute(name) = source {
+            if let ValueSelector::Attribute(name) = source {
                 if let Some(range) = delete_node.get_attribute_with_name(name).map(|a| a.range()) {
                     range
                 } else {
@@ -273,13 +273,13 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             path_value.push('<');
             path_value.push_str(name);
             if i == last_idx {
-                if let ValueSource::Attribute(attribute_name) = path.source {
+                if let ValueSelector::Attribute(attribute_name) = path.selector {
                     path_value.push_str(&format!(" {attribute_name}=\"{value}\""));
                 }
             }
             path_value.push('>');
         }
-        if ValueSource::Text == path.source {
+        if ValueSelector::Text == path.selector {
             path_value.push_str(&value);
         }
         // NOTE: closing tags
@@ -287,7 +287,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             path_value.push_str("</");
             path_value.push_str(name);
             path_value.push('>');
-            if i == last_idx && ValueSource::Tail == path.source {
+            if i == last_idx && ValueSelector::Tail == path.selector {
                 path_value.push_str(&value);
             }
         }
@@ -295,7 +295,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         // current_node?
         // <a/> - self closing -> replacer at bounds: 2..4, replacement : format!(">{new_pathed_value}</{current_node_name}>");
         // <a><g/></a> - contains sub nodes -> replacer at bounds: 3..3, replacement: new_pathed_value
-        if let Some(bounds) = current_node.get_bounds(&ValueSource::Text) {
+        if let Some(bounds) = current_node.get_bounds(&ValueSelector::Text) {
             Replacer {
                 bounds: bounds.start..bounds.start,
                 replacement: path_value,
@@ -319,8 +319,8 @@ mod tests {
         let xml = r###"<A b="zuzu"> text <B foo="bar"/> tail of B </A>"###;
         let doc = Document::parse(xml).expect("could not parse xml");
 
-        let attribute_source = ValueSource::Attribute("b");
-        let text_source = ValueSource::Text;
+        let attribute_source = ValueSelector::Attribute("b");
+        let text_source = ValueSelector::Text;
 
         let node = doc.root().first_child().expect("first child should be A");
 
@@ -344,7 +344,7 @@ mod tests {
         let xml = r###"<A b="zuzu"></A>"###;
         let doc = Document::parse(xml).expect("could not parse xml");
 
-        let text_source = ValueSource::Text;
+        let text_source = ValueSelector::Text;
 
         let node = doc.root().first_child().expect("first child should be A");
 
@@ -361,7 +361,7 @@ mod tests {
         let xml = r###"<A b="zuzu"><B></B></A>"###;
         let doc = Document::parse(xml).expect("could not parse xml");
 
-        let text_source = ValueSource::Text;
+        let text_source = ValueSelector::Text;
 
         let node = doc.root().first_child().expect("first child should be A");
 
@@ -378,7 +378,7 @@ mod tests {
         let xml = r###"<A b="zuzu"><B></B> B tail </A>"###;
         let doc = Document::parse(xml).expect("could not parse xml");
 
-        let text_source = ValueSource::Tail;
+        let text_source = ValueSelector::Tail;
 
         let node = doc
             .descendants()

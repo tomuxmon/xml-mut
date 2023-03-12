@@ -1,6 +1,6 @@
 use xml_mut_data::{
     GetClause, Mutation, NodePath, PathVariant, Predicate, PredicateExists, SetClause,
-    ValueAssignment, ValuePath, ValueSource, ValueVariant,
+    ValueAssignment, ValuePath, ValueSelector, ValueVariant,
 };
 use xml_mut_parse::prelude::*;
 
@@ -26,7 +26,7 @@ delete version"###;
         where_clause.predicates[0],
         Predicate::Exists(PredicateExists {
             exists_word: "exists",
-            path: PathVariant::Path(NodePath {
+            path: PathVariant::Node(NodePath {
                 path: vec!["version"]
             }),
         })
@@ -76,11 +76,11 @@ SET Version[text] = [@Version]"###;
                         node_path: NodePath {
                             path: vec!["Version"]
                         },
-                        source: ValueSource::Text,
+                        selector: ValueSelector::Text,
                     },
                     source: ValueVariant::Selector(ValuePath {
                         node_path: NodePath { path: vec![] },
-                        source: ValueSource::Attribute("Version"),
+                        selector: ValueSelector::Attribute("Version"),
                     })
                 }]
             }),
