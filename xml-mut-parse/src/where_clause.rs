@@ -63,17 +63,9 @@ pub fn path_variant(s: &str) -> IResult<&str, PathVariant> {
 pub fn predicate_node_exists(s: &str) -> IResult<&str, PredicateExists> {
     let (s, exists_word) = tag_no_case("exists")(s)?;
     let (s, _) = multispace1(s)?;
-    let (s, node_path) = node_path(s)?;
-    let (s, source) = opt(value_source)(s)?;
+    let (s, path) = path_variant(s)?;
 
-    Ok((
-        s,
-        PredicateExists {
-            exists_word,
-            node_path,
-            source,
-        },
-    ))
+    Ok((s, PredicateExists { exists_word, path }))
 }
 
 pub fn predicate_equals(s: &str) -> IResult<&str, PredicateEquals> {

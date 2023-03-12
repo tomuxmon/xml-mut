@@ -1,4 +1,4 @@
-use xml_mut_data::{Predicate, ValueSource, ValueVariant};
+use xml_mut_data::{NodePath, PathVariant, Predicate, ValueSource, ValueVariant};
 use xml_mut_parse::prelude::*;
 
 #[test]
@@ -56,8 +56,13 @@ fn parse_predicate_node_exists_1() {
     let fragment = "exists version";
     let (_, b) = predicate_node_exists(fragment).expect("could not parse predicate node exists");
     assert_eq!(b.exists_word, "exists");
-    assert_eq!(b.node_path.len(), 1);
-    assert_eq!(b.node_path[0], "version");
+
+    assert_eq!(
+        b.path,
+        PathVariant::Path(NodePath {
+            path: vec!["version"]
+        })
+    );
 }
 
 #[test]
@@ -65,10 +70,12 @@ fn parse_predicate_node_exists_2() {
     let fragment = "exists ItemGroup/ReferenceŲ/verŠion";
     let (_, b) = predicate_node_exists(fragment).expect("could not parse predicate node exists");
     assert_eq!(b.exists_word, "exists");
-    assert_eq!(b.node_path.len(), 3);
-    assert_eq!(b.node_path[0], "ItemGroup");
-    assert_eq!(b.node_path[1], "ReferenceŲ");
-    assert_eq!(b.node_path[2], "verŠion");
+    assert_eq!(
+        b.path,
+        PathVariant::Path(NodePath {
+            path: vec!["ItemGroup", "ReferenceŲ", "verŠion"]
+        })
+    );
 }
 
 #[test]

@@ -55,9 +55,7 @@ pub enum Predicate<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PredicateExists<'a> {
     pub exists_word: &'a str,
-    // TODO: use PathVariant instead
-    pub node_path: NodePath<'a>,
-    pub source: Option<ValueSource<'a>>,
+    pub path: PathVariant<'a>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -95,9 +93,8 @@ impl<'a> SetClause<'a> {
             if let ValueVariant::Selector(value_path) = &assignment.source {
                 if !value_path.node_path.is_empty() {
                     predicates.push(Predicate::Exists(PredicateExists {
-                        node_path: value_path.node_path.clone(),
                         exists_word: "exists",
-                        source: Some(value_path.source.clone()),
+                        path: PathVariant::Value(value_path.clone()),
                     }));
                 }
             }
