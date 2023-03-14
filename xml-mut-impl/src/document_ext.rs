@@ -4,7 +4,7 @@ use xml_mut_data::{Mutation, ValueSelector};
 
 pub trait DocumentExt {
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer>;
-    fn get_replacers_all(&self, mutations: Vec<Mutation>) -> Vec<Replacer> {
+    fn get_replacers_all(&self, mutations: Vec<&Mutation>) -> Vec<Replacer> {
         mutations
             .iter()
             .flat_map(|m| self.get_replacers(m))

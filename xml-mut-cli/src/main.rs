@@ -1,60 +1,48 @@
-use bpaf::*;
+use crate::cli::MutCli;
+use clap::Parser;
 use roxmltree::*;
 use std::fs;
 use xml_mut_data::{Mutation, Statement};
 use xml_mut_impl::prelude::*;
 use xml_mut_parse::prelude::*;
 
-fn main() {
+mod cli;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TODO: a name of mutation defination file in a common folder ~/.xml-mut/
-    // TODO: shoul it drill down in to sub folders? (CLI arg for that)
 
-    // TODO: in addition to xml paths
-    // folder path with desired xml extensions
-    // --folder tome/tomas/some_path --ext .csproj --ext .vbproj --ext .fsproj
+    let mut_cli = MutCli::parse();
+    
+    // println!("MutCli parsed: {mut_cli:?}");
 
-    let xml_paths = xml_path_many();
-    let xut_paths = xut_path_many();
+    let xml_paths = mut_cli.scan();
 
-    let parser = construct!(MutationSet {
-        xml_paths,
-        xut_paths
-    });
+    // println!("xml_paths parsed: {xml_paths:?}");
 
-    let speed_and_distance = parser
-        .to_options()
-        .descr("transforms xml files using xut definitions");
-
-    let opts = speed_and_distance.run();
-
-    for xml_path in opts.xml_paths.clone().into_iter() {
-        let xml = fs::read_to_string(xml_path.clone()).expect("invalid xml path");
-        let doc: Document = Document::parse(xml.as_str()).expect("could not parse xml");
+    for xml_path in xml_paths.into_iter() {
+        let xml = fs::read_to_string(xml_path.clone())?;
+        let doc: Document = Document::parse(xml.as_str())?;
         let mut replacers: Vec<Replacer> = vec![];
-        for xut_path in opts.xut_paths.clone().into_iter() {
-            let xut = fs::read_to_string(xut_path).expect("invalid xut path");
-            let (_, statements) = statements(xut.as_str()).expect("could not parse mutation");
-            let mutations = statements
-                .into_iter()
-                .filter_map(|s| match s {
-                    Statement::Mutation(rep) => Some(rep),
-                    _ => None,
-                })
-                .collect::<Vec<Mutation>>();
 
-            replacers.append(&mut doc.get_replacers_all(mutations))
-        }
+        let xut = fs::read_to_string(mut_cli.xml_mut_path.clone())?;
+        let (_, ref statements) = statements(xut.as_str()).expect("could not parse statements");
+        let mutations = statements
+            .iter()
+            .filter_map(|s| match s {
+                Statement::Mutation(rep) => Some(rep),
+                _ => None,
+            })
+            .collect::<Vec<&Mutation>>();
+
+        replacers.append(&mut doc.get_replacers_all(mutations));
+
         if let Some(new_xml) = doc.apply(replacers) {
             // NOTE: reparse resulting xml to validate it.
             let new_doc = match Document::parse(&new_xml) {
                 Ok(d) => d,
                 Err(error) => {
-                    // return None;
-                    // return Err(ReplaceError::GeneratedXmlInvalid(
-                    //     "xml is invalid after applying replacers".to_string(),
-                    // ));
                     print!("xml is invalid after applying replacers: {error}");
-                    return;
+                    return Err(Box::new(error));
                 }
             };
 
@@ -71,34 +59,6 @@ fn main() {
             println!("no changes");
         }
     }
-}
 
-#[derive(Clone, Debug)]
-struct MutationSet {
-    /// unbla
-    xml_paths: Vec<String>,
-    /// nbla
-    xut_paths: Vec<String>,
-}
-
-fn xml_path() -> impl Parser<String> {
-    long("xml-path")
-        .short('p')
-        .help("path of an xml file")
-        .argument::<String>("PATH")
-}
-
-fn xml_path_many() -> impl Parser<Vec<String>> {
-    xml_path().many()
-}
-
-fn xut_path() -> impl Parser<String> {
-    long("xut-path")
-        .short('u')
-        .help("path of a mutation file, usually with a .xut file extension")
-        .argument::<String>("PATH")
-}
-
-fn xut_path_many() -> impl Parser<Vec<String>> {
-    xut_path().many()
+    Ok(())
 }

@@ -5,7 +5,8 @@ edition = "2021"
 
 [dependencies]
 roxmltree = "0.18.0"
-bpaf = "0.7.9"
+clap = { version = "4.1.8", features = ["derive"] }
+walkdir = "2.3.2"
 xml-mut-data = { path = "../xml-mut-data" }
 xml-mut-parse = { path = "../xml-mut-parse" }
 xml-mut-impl = { path = "../xml-mut-impl" }
