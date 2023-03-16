@@ -10,7 +10,7 @@ pub trait DocumentExt {
             .flat_map(|m| self.get_replacers(m))
             .collect()
     }
-    fn apply(&self, replacers: Vec<Replacer>) -> Option<String>;
+    fn apply(&self, replacers: &[Replacer]) -> Option<String>;
     fn get_end_tag_trim_replacers(&self) -> Vec<Replacer>;
 }
 
@@ -22,7 +22,7 @@ impl<'input> DocumentExt for Document<'input> {
             .collect()
     }
 
-    fn apply(&self, replacers: Vec<Replacer>) -> Option<String> {
+    fn apply(&self, replacers: &[Replacer]) -> Option<String> {
         if replacers.is_empty() {
             return None;
         }

@@ -24,10 +24,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect::<Vec<&Mutation>>();
 
-    for xml_path in mut_cli.scan().into_iter() {
+    for xml_path in mut_cli.scan().iter() {
         let xml = fs::read_to_string(xml_path.clone())?;
         let doc: Document = Document::parse(xml.as_str())?;
-        let replacers = doc.get_replacers_all(mutations);
+        let replacers = &doc.get_replacers_all(mutations);
 
         if let Some(new_xml) = doc.apply(replacers) {
             // NOTE: reparse resulting xml to validate it.
@@ -40,16 +40,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             // NOTE: post processing
-            let trim_replacers = new_doc.get_end_tag_trim_replacers();
+            let trim_replacers = &new_doc.get_end_tag_trim_replacers();
             let final_text = if let Some(n) = new_doc.apply(trim_replacers) {
                 n
             } else {
                 new_xml
             };
 
-            fs::write(xml_path, final_text).expect("could not write xml");
+            let replacers_len = replacers.len() + trim_replacers.len();
+
+            match fs::write(xml_path, final_text) {
+                Ok(_) => println!("{:?} - updated with {} replaces", xml_path, replacers_len),
+                Err(err) => println!(
+                    "{:?} - updated with {} replaces, BUT failed writing to disk: {}",
+                    xml_path, replacers_len, err
+                ),
+            }
         } else {
-            println!("no changes in {:?}", xml_path);
+            println!("{:?} - no changes", xml_path);
         }
     }
 
