@@ -71,13 +71,17 @@ impl<'a, 'input: 'a> NewXml for Node<'a, 'input> {
         // <a/>makaron
         // <a><b><c/>makaron</b></a>
 
-        // TODO: construct the value in a brutal way
+        // NOTE: construct the value in a brutal way
         let mut path_value = String::new();
         let last_idx = remaining_path.len() - 1;
         // NOTE: opening tags
         for (i, name) in remaining_path.iter().enumerate() {
             path_value.push('<');
-            path_value.push_str(name);
+            if ValueSelector::Name == path.selector && i == last_idx {
+                path_value.push_str(&value);
+            } else {
+                path_value.push_str(name);
+            }
             if i == last_idx {
                 if let ValueSelector::Attribute(attribute_name) = path.selector {
                     path_value.push_str(&format!(" {attribute_name}=\"{value}\""));
@@ -91,7 +95,11 @@ impl<'a, 'input: 'a> NewXml for Node<'a, 'input> {
         // NOTE: closing tags
         for (i, name) in remaining_path.iter().enumerate().rev() {
             path_value.push_str("</");
-            path_value.push_str(name);
+            if i == last_idx && ValueSelector::Name == path.selector {
+                path_value.push_str(&value);
+            } else {
+                path_value.push_str(name);
+            }
             path_value.push('>');
             if i == last_idx && ValueSelector::Tail == path.selector {
                 path_value.push_str(&value);

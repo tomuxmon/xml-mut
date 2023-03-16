@@ -71,6 +71,9 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                     },
                 }
             }
+            ValueSelector::Name => {
+                Some(self.range().start + 1..self.range().start + 1 + self.tag_name().name().len())
+            }
         }
     }
 
@@ -283,5 +286,25 @@ mod tests {
 
         assert_eq!(tail_range, 19..27);
         assert_eq!(&doc.input_text()[tail_range], " B tail ");
+    }
+
+    #[test]
+    fn get_bounds_name_01() {
+        let xml = r###"<A b="zuzu"><B></B> B tail </A>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+
+        let name_source = ValueSelector::Name;
+
+        let node = doc
+            .descendants()
+            .find(|n| n.has_tag_name("A"))
+            .expect("should A");
+
+        let name_range = node
+            .get_bounds(&name_source)
+            .expect("tail should have bounds");
+
+        assert_eq!(name_range, 1..2);
+        assert_eq!(&doc.input_text()[name_range], "A");
     }
 }

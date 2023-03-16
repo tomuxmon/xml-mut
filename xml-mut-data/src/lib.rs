@@ -15,10 +15,10 @@ impl<'a> Deref for NodePath<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueSelector<'a> {
-    // TODO: NodeName
     Attribute(&'a str),
     Text,
     Tail,
+    Name,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
