@@ -12,29 +12,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // TODO: a name of mutation defination file in a common folder ~/.xml-mut/
 
     let mut_cli = MutCli::parse();
-    
-    // println!("MutCli parsed: {mut_cli:?}");
 
-    let xml_paths = mut_cli.scan();
+    let xut = fs::read_to_string(mut_cli.xml_mut_path.clone())?;
 
-    // println!("xml_paths parsed: {xml_paths:?}");
+    let (_, ref statements) = statements(xut.as_str()).expect("could not parse statements");
+    let mutations = &statements
+        .iter()
+        .filter_map(|s| match s {
+            Statement::Mutation(rep) => Some(rep),
+            _ => None,
+        })
+        .collect::<Vec<&Mutation>>();
 
-    for xml_path in xml_paths.into_iter() {
+    for xml_path in mut_cli.scan().into_iter() {
         let xml = fs::read_to_string(xml_path.clone())?;
         let doc: Document = Document::parse(xml.as_str())?;
-        let mut replacers: Vec<Replacer> = vec![];
-
-        let xut = fs::read_to_string(mut_cli.xml_mut_path.clone())?;
-        let (_, ref statements) = statements(xut.as_str()).expect("could not parse statements");
-        let mutations = statements
-            .iter()
-            .filter_map(|s| match s {
-                Statement::Mutation(rep) => Some(rep),
-                _ => None,
-            })
-            .collect::<Vec<&Mutation>>();
-
-        replacers.append(&mut doc.get_replacers_all(mutations));
+        let replacers = doc.get_replacers_all(mutations);
 
         if let Some(new_xml) = doc.apply(replacers) {
             // NOTE: reparse resulting xml to validate it.
@@ -56,7 +49,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             fs::write(xml_path, final_text).expect("could not write xml");
         } else {
-            println!("no changes");
+            println!("no changes in {:?}", xml_path);
         }
     }
 
