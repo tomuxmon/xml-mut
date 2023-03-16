@@ -15,7 +15,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let xut = fs::read_to_string(mut_cli.xml_mut_path.clone())?;
 
-    let (_, ref statements) = statements(xut.as_str()).expect("could not parse statements");
+    let (non_parsed, ref statements) =
+        statements(xut.as_str()).expect("could not parse statements");
+
     let mutations = &statements
         .iter()
         .filter_map(|s| match s {
@@ -23,6 +25,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => None,
         })
         .collect::<Vec<&Mutation>>();
+
+    if !non_parsed.is_empty() {
+        println!(
+            "Parsed xml mut out of '{:?}', but there is still remainder left: \n{}",
+            mut_cli.xml_mut_path, non_parsed
+        );
+    }
 
     for xml_path in mut_cli.scan().iter() {
         let xml = fs::read_to_string(xml_path.clone())?;
