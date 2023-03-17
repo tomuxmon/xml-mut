@@ -67,3 +67,18 @@ impl<'input> DocumentExt for Document<'input> {
         Some(new_xml)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use roxmltree::Document;
+
+    use super::*;
+
+    #[test]
+    fn get_end_tag_trim_replacers_01() {
+        let xml = r###"<A b="zuzu"/>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+        let replacement = doc.get_end_tag_trim_replacers();
+        assert_eq!(replacement.len(), 0);
+    }
+}
