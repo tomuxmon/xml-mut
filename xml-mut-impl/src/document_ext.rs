@@ -1,5 +1,5 @@
 use crate::prelude::{Mutable, NodeExtensions, Replacer, Valueable};
-use roxmltree::Document;
+use roxmltree::{Document, Node};
 use xml_mut_data::{Mutation, ValueSelector};
 
 pub trait DocumentExt {
@@ -25,13 +25,17 @@ impl<'input> DocumentExt for Document<'input> {
     fn get_end_tag_trim_replacers(&self) -> Vec<Replacer> {
         // from: <a></a> -> from tag_end_pos to tag_end_pos + tag_name_len + 4;;
         // to: <a/>
+        fn is_fit(node: &Node) -> bool {
+            node.is_element()
+                && (node
+                    .get_bounds(&ValueSelector::Text)
+                    .map_or(false, |b| b.is_empty())
+                    || (node.first_element_child().is_none()
+                        && node.text().map_or(false, |t| t.trim().is_empty())))
+        }
+
         self.descendants()
-            .filter(|n| {
-                n.is_element()
-                    && (n.get_bounds(&ValueSelector::Text).is_none()
-                        || (n.first_element_child().is_none()
-                            && n.text().map_or(true, |t| t.trim().is_empty())))
-            })
+            .filter(is_fit)
             .map(|n| Replacer {
                 bounds: n.get_tag_end_position()..n.range().end,
                 replacement: "/>".to_string(),
@@ -80,5 +84,36 @@ mod tests {
         let doc = Document::parse(xml).expect("could not parse xml");
         let replacement = doc.get_end_tag_trim_replacers();
         assert_eq!(replacement.len(), 0);
+    }
+
+    #[test]
+    fn get_end_tag_trim_replacers_02() {
+        let xml = r###"<A b="zuzu"></A>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+        let replacement = doc.get_end_tag_trim_replacers();
+        assert_eq!(replacement.len(), 1);
+        assert_eq!(
+            replacement[0],
+            Replacer {
+                bounds: 11..16,
+                replacement: "/>".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn get_end_tag_trim_replacers_03() {
+        let xml = r###"<A b="zuzu">     
+        </A>"###;
+        let doc = Document::parse(xml).expect("could not parse xml");
+        let replacement = doc.get_end_tag_trim_replacers();
+        assert_eq!(replacement.len(), 1);
+        assert_eq!(
+            replacement[0],
+            Replacer {
+                bounds: 11..30,
+                replacement: "/>".to_string()
+            }
+        );
     }
 }

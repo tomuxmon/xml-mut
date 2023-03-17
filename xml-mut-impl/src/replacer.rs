@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, ops::Range};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Replacer {
     // TODO: String -> &'a str
     pub bounds: Range<usize>,
