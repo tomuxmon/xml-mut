@@ -1,4 +1,4 @@
-use crate::prelude::{NodeExtensions, Replacer, Valueable};
+use crate::prelude::{AttributeQuote, NodeExtensions, Replacer, StringExt, Valueable};
 use roxmltree::Node;
 use xml_mut_data::{ValuePath, ValueSelector};
 
@@ -11,11 +11,8 @@ pub trait NewXml {
 impl<'a, 'input: 'a> NewXml for Node<'a, 'input> {
     fn get_new_attribute_replacer(&self, attribute_name: &str, value: String) -> Replacer {
         let pos = self.get_tag_end_position();
-
-        // TODO: string escaping
-        // TODO: pick quotes for attribute value enclosement
-
-        let replacement: String = format!(" {attribute_name}=\"{value}\"");
+        let escaped_value = value.xml_escape_attribute_value(AttributeQuote::Double);
+        let replacement: String = format!(" {attribute_name}={escaped_value}");
 
         Replacer {
             bounds: pos..pos,
@@ -24,11 +21,12 @@ impl<'a, 'input: 'a> NewXml for Node<'a, 'input> {
     }
 
     fn get_new_node_text_replacer(&self, value: String) -> Replacer {
-        // here we are sure that the node is self closing element with no shildren
+        // NOTE: here we are sure that the node is self closing element with no shildren
         let pos = self.get_tag_end_position();
         let pos_end = self.range().end;
         let name = self.tag_name().name();
-        let replacement = format!(">{value}</{name}>");
+        let escaped_value = value.xml_escape_node_text();
+        let replacement = format!(">{escaped_value}</{name}>");
         Replacer {
             bounds: pos..pos_end,
             replacement,
@@ -84,13 +82,15 @@ impl<'a, 'input: 'a> NewXml for Node<'a, 'input> {
             }
             if i == last_idx {
                 if let ValueSelector::Attribute(attribute_name) = path.selector {
-                    path_value.push_str(&format!(" {attribute_name}=\"{value}\""));
+                    let escaped_value = value.xml_escape_attribute_value(AttributeQuote::Double);
+                    path_value.push_str(&format!(" {attribute_name}={escaped_value}"));
                 }
             }
             path_value.push('>');
         }
         if ValueSelector::Text == path.selector {
-            path_value.push_str(&value);
+            let escaped_value = value.xml_escape_node_text();
+            path_value.push_str(&escaped_value);
         }
         // NOTE: closing tags
         for (i, name) in remaining_path.iter().enumerate().rev() {
@@ -102,7 +102,8 @@ impl<'a, 'input: 'a> NewXml for Node<'a, 'input> {
             }
             path_value.push('>');
             if i == last_idx && ValueSelector::Tail == path.selector {
-                path_value.push_str(&value);
+                let escaped_value = value.xml_escape_node_text();
+                path_value.push_str(&escaped_value);
             }
         }
 

@@ -6,6 +6,7 @@ mod mutable;
 mod new_xml;
 mod node_ext;
 mod replacer;
+mod string_ext;
 mod valueable;
 
 pub mod prelude {
@@ -17,5 +18,6 @@ pub mod prelude {
     pub use super::new_xml::*;
     pub use super::node_ext::*;
     pub use super::replacer::*;
+    pub use super::string_ext::*;
     pub use super::valueable::*;
 }
