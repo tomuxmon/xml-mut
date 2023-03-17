@@ -4,12 +4,14 @@ use crate::replacer::Replacer;
 pub enum DeleteError {
     DeleteNothing(String),
     DeleteNoBounds(String),
+    DeleteBoundsEmpty(String),
 }
 
 #[derive(Debug)]
 pub enum AssignError {
     AssignmentSourceValueNotFound(String),
     AssignmentTargetBoundsNotFound(String),
+    AssignmentTargetBoundsEmpty(String),
 }
 
 #[derive(Debug)]

@@ -157,6 +157,16 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
             }
         };
 
+        if bounds.is_empty() {
+            return Err(AssignError::AssignmentTargetBoundsEmpty(format!(
+                "Assignment Node {:?} produced empty bounds ({:?}). Path {:?}, source {:?}.",
+                assignment_node.tag_name(),
+                bounds,
+                &assignment.target.node_path,
+                &assignment.target.selector
+            )));
+        }
+
         Ok(Replacer {
             bounds,
             replacement,
@@ -197,6 +207,13 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
         } else {
             delete_node.range()
         };
+
+        if bounds.is_empty() {
+            return Err(DeleteError::DeleteBoundsEmpty(format!(
+                "Bounds empty ({:?}) for delete target node {:?}",
+                bounds, path,
+            )));
+        }
 
         Ok(Replacer {
             bounds,
