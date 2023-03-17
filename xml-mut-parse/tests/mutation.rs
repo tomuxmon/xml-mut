@@ -88,3 +88,11 @@ SET Version[text] = [@Version]"###;
         }
     );
 }
+
+#[test]
+fn parse_mutation_4() {
+    let fragment = r###"GET ItemGroup/PackageReference
+    WHERE Pempe[name] == "Pempe""###;
+    let result= mutation(fragment);
+    assert!(result.is_err());
+}
