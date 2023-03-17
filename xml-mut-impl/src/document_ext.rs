@@ -10,8 +10,8 @@ pub trait DocumentExt {
             .flat_map(|m| self.get_replacers(m))
             .collect()
     }
-    fn apply(&self, replacers: &[Replacer]) -> Option<String>;
     fn get_end_tag_trim_replacers(&self) -> Vec<Replacer>;
+    fn apply(&self, replacers: &[Replacer]) -> Option<String>;
 }
 
 impl<'input> DocumentExt for Document<'input> {
@@ -19,6 +19,23 @@ impl<'input> DocumentExt for Document<'input> {
         self.descendants()
             .filter(|n| n.is_fit(mutation))
             .flat_map(|n| n.get_replacers(mutation))
+            .collect()
+    }
+
+    fn get_end_tag_trim_replacers(&self) -> Vec<Replacer> {
+        // from: <a></a> -> from tag_end_pos to tag_end_pos + tag_name_len + 4;;
+        // to: <a/>
+        self.descendants()
+            .filter(|n| {
+                n.is_element()
+                    && (n.get_bounds(&ValueSelector::Text).is_none()
+                        || (n.first_element_child().is_none()
+                            && n.text().map_or(true, |t| t.trim().is_empty())))
+            })
+            .map(|n| Replacer {
+                bounds: n.get_tag_end_position()..n.range().end,
+                replacement: "/>".to_string(),
+            })
             .collect()
     }
 
@@ -48,22 +65,5 @@ impl<'input> DocumentExt for Document<'input> {
         new_xml.push_str(&self.input_text()[offset..self.input_text().len()]);
 
         Some(new_xml)
-    }
-
-    fn get_end_tag_trim_replacers(&self) -> Vec<Replacer> {
-        // from: <a></a> -> from tag_end_pos to tag_end_pos + tag_name_len + 4;;
-        // to: <a/>
-        self.descendants()
-            .filter(|n| {
-                n.is_element()
-                    && (n.get_bounds(&ValueSelector::Text).is_none()
-                        || (n.first_element_child().is_none()
-                            && n.text().map_or(true, |t| t.trim().is_empty())))
-            })
-            .map(|n| Replacer {
-                bounds: n.get_tag_end_position()..n.range().end,
-                replacement: "/>".to_string(),
-            })
-            .collect()
     }
 }
