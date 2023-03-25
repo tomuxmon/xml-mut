@@ -4,7 +4,7 @@ xml mut (XML mutation) - a simple XML mutation definition language resembling SQ
 
 ## Example
 
-Lets say you have some simple XML, but you are still not happy and you would like to simplify it a bit more. In the bellow XML you know that `PackageReference` sub node's `Version` text could just be placed directly as an attribute of `PackageReference`. But you are so lazy do do it manually 😒.
+Lets say you have some simple XML, but you are still not happy and you would like to simplify it a bit more. In the bellow XML you know that `PackageReference` sub node's `Version` text could just be placed directly as an attribute of `PackageReference`. But you are too lazy to do it manually 😒.
 
 ```xml
 <Project>
@@ -19,7 +19,7 @@ Lets say you have some simple XML, but you are still not happy and you would lik
 </Project>
 ```
 
-So instead you use xml-mut to do the work for you. You have seen some SQL in the past and this task should be trivial. You brace yourself 💪 and write a simple XML mutation.
+So instead you use xml-mut to do the work for you. You have seen some SQL in the past, and this task should be trivial. You brace yourself 💪 and write a simple XML mutation.
 
 ```sql
 GET Project/ItemGroup/PackageReference
