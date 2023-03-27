@@ -65,7 +65,7 @@ xml-mut-cli <XML_MUT_PATH> include --xml-path <XML_PATH>
 Here `<XML_MUT_PATH>` is a path to your XML mutation file. You can give it `.xmlmut` extension but it is not mandatory so far. `--xml-path` or `-x` argument can be repeated allowing you to include multiple XML files to be mutated. So a call could look something like this:
 
 ```bash
-xml-mut-cli ~/packageref-version-fix.xmlmut include -x ~/code/My.Awsome.csproj -x ~/code/My.Awsome.Other.fsproj
+xml-mut-cli ~/packageref-version-fix.xmlmut include -x ~/code/awesome.csproj -x ~/code/amazing.fsproj
 ```
 
 ### scan command
