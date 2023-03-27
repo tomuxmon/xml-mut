@@ -65,7 +65,7 @@ xml-mut-cli <XML_MUT_PATH> include --xml-path <XML_PATH>
 Here `<XML_MUT_PATH>` is a path to your XML mutation file. You can give it `.xmlmut` extension but it is not mandatory so far. `--xml-path` or `-x` argument can be repeated allowing you to include multiple XML files to be mutated. So a call could look something like this:
 
 ```bash
-xml-mut-cli ~/packageref-version-fix.xmlmut include -x ~/code/awesome.csproj -x ~/code/amazing.fsproj
+xml-mut-cli ~/pref-version-fix.xmlmut include -x ~/code/awesome.csproj -x ~/code/amazing.fsproj
 ```
 
 ### scan command
@@ -85,7 +85,7 @@ xml-mut-cli <XML_MUT_PATH> scan --extension <EXTENSION> <BASE_PATH>
 Here `<XML_MUT_PATH>` is a path to your XML mutation file. You can give it `.xmlmut` extension but it is not mandatory so far. `--extension` or `-e` allows specifying what file extensions to include when scaning directory. You can specify multiple extensions. `<BASE_PATH>` defines a path you want to scan. So a call could look something like this:
 
 ```bash
-xml-mut-cli ~/packageref-version-fix.xmlmut scan -e csproj -e fsproj ~/code
+xml-mut-cli ~/pref-version-fix.xmlmut scan -e csproj -e fsproj ~/code
 ```
 
 ## Architexture
