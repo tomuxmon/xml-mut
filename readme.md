@@ -40,9 +40,29 @@ Here we are saying we need to `get` xml node having a path of `Project`, `ItemGr
 
 Your eyes hurt much less looking into XML above 😎.
 
+## Mutation syntax
+
+The syntax reminds SQL. It is plain and simple. It all starts with `GET`.
+
+### GET
+
+// tood
+
+### WHERE
+
+// tood
+
+### SET
+
+// tood
+
+### DELETE
+
+// tood
+
 ## CLI Usage Example
 
-When using CLI you need to suply a path to your XML mutation file. Next you decide if you want to specify XML files one by one and use [include command](#include-command) or scan the directory and use [scan command](#scan-command). You can consult how to use CLI with a `help` call.
+When using CLI you need to suply a path to your XML mutation file. A single XML mutation file can contain multiple mutation definitions. Next you decide if you want to specify XML files one by one and use [include command](#include-command) or scan the directory and use [scan command](#scan-command). You can consult how to use CLI with a `help` call.
 
 ```bash
 xml-mut-cli --help
