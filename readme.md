@@ -42,7 +42,7 @@ Your eyes hurt much less looking into XML above 😎.
 
 ## CLI Usage Example
 
-When using CLI you need to suply a path to your XML mutation file. Next you decide if you want to specify XML files one by one and use [include command](#include-command) or scan the directory and use [scan command](#scan-command). if you need more help you can call with `--help` argument like shown below.
+When using CLI you need to suply a path to your XML mutation file. Next you decide if you want to specify XML files one by one and use [include command](#include-command) or scan the directory and use [scan command](#scan-command). You can consult how to use CLI with a `help` call.
 
 ```bash
 xml-mut-cli --help
