@@ -46,7 +46,7 @@ Your eyes hurt much less looking into XML above 😎.
 
 ## Architexture
 
-There are 4 crates so far. [xml-mut-data](xml-mut-data/) - is where all data structures of the XML mutation language reside. [xml-mut-parse](xml-mut-parse/) crate uses [nom](https://github.com/rust-bakery/nom) to parse XML mutation definition. [xml-mut-impl](xml-mut-impl/) uses [roxmltree](https://github.com/RazrFalcon/roxmltree) (read only xml tree) and extends it to be able to process XML with mutation definitions. [xml-mut-cli](xml-mut-cli/) is the crate and a CLI tool jat combines both XML mutation parsing and read only xml extensions to process XML with mutation definitions. All of this is just in a proof of concept stage and will likely change in the future.
+There are 4 crates so far. [xml-mut-data](xml-mut-data/) - is where all data structures of the XML mutation language reside. [xml-mut-parse](xml-mut-parse/) crate uses [nom](https://github.com/rust-bakery/nom) to parse XML mutation definition. [xml-mut-impl](xml-mut-impl/) uses [roxmltree](https://github.com/RazrFalcon/roxmltree) (read only xml tree) and extends it to be able to process XML with mutation definitions. [xml-mut-cli](xml-mut-cli/) uses [clap](https://github.com/clap-rs/clap) to combine both XML mutation parsing and read only xml extensions to process XML with mutation definitions. All of this is just in a proof of concept stage and will likely change in the future.
 
 ## Is it stable
 
