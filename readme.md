@@ -80,7 +80,7 @@ WHERE {predicates}
 Where clause allows filtering down desired nodes when node name match is not enough. You can have multiple predicates and you have to separate them with `and`.
 
 ```sql
-{predicate} and {predicate} and {predicate}
+{predicate} and {predicate} and {predicate} ...
 ```
 
 There are 2 kinds of predicates. `EXISTS` and `EQUALS`.
@@ -172,6 +172,16 @@ WHERE [@name] == "Lolipop"
 ```
 
 this will instead pick `<Sweet name="Lolipop">` node from the XML above.
+
+#### Mixing and matching
+
+You can include as many predicates as you need so where clause like below is valid.
+
+```sql
+WHERE [@name] == "Lolipop" 
+    and EXISTS Sprinkles
+    and EXISTS Filler
+```
 
 ### SET
 
