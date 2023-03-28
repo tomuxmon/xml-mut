@@ -46,11 +46,132 @@ The syntax reminds SQL. It is plain and simple. It all starts with `GET`.
 
 ### GET
 
-// tood
+```sql
+GET {node_path}
+```
+
+`get` is mandatory clause containing only the path of the node you intend to mutate. A simple example below:
+
+```sql
+GET Candy/Sweet
+```
+
+Here it will try to find all `Sweet` XML nodes having a parent node `Candy`. So if we had XML as below, we would match on 2 nodes. `<Sweet name="Caramel"/>` and `<Sweet name="Lolipop" />`
+
+```xml
+<KidsJoy>
+    <Candy>
+        <Sweet name="Caramel"/>
+        <Sweet name="Lolipop" />
+        <Salty name="Lacris" />
+    </Candy>
+    <Sweet name="Potato"/>
+</KidsJoy>
+```
+
+`<Sweet name="Potato"/>` does not match because it does not have a parent of `Candy`.
 
 ### WHERE
 
-// tood
+```sql
+WHERE {predicates}
+```
+
+Where clause allows filtering down desired nodes when node name match is not enough. You can have multiple predicates and you have to separate them with `and`.
+
+```sql
+{predicate} and {predicate} and {predicate}
+```
+
+There are 2 kinds of predicates. `EXISTS` and `EQUALS`.
+
+```sql
+{predicate} ::= {predicate_exists} | {predicate_equals}
+```
+
+#### Exists
+
+A simple example where clause with exists predicate:
+
+```sql
+WHERE EXISTS Sprinkles/Round
+```
+
+Here it will require that the node would contain sub node `Sprinkles` and then `Sprinkles` would contain sub node `Round`. This is similar to how `GET` works but instead of requiring path up to the node (parent path) it requires a path down the node (child path). So if we would combine with previous `GET` we would get this:
+
+```sql
+GET Candy/Sweet
+WHERE EXISTS Sprinkles/Round
+```
+
+and if we had XML like below we would match on 1 node `<Sweet name="Lolipop">`.
+
+```xml
+<KidsJoy>
+    <Candy>
+        <Sweet name="Caramel" />
+        <Sweet name="Lolipop">
+            <Sprinkles>
+                <Round />
+            </Sprinkles>
+        </Sweet>
+        <Salty name="Lacris" />
+    </Candy>
+    <Sweet name="Potato"/>
+</KidsJoy>
+```
+
+#### Equals
+
+equals predicate syntax is expressed like shown below:
+
+```sql
+{predicate_equals} ::= {value_path} == {value_variant}
+{value_path} ::= {node_path}{value_selector}
+{value_variant} ::= {value_path} | {value_literal}
+{value_literal} ::= {dis_just_a_string}
+```
+
+Oh boy it is so unreadable above. Lets look at a simple example of where clause with equals predicate:
+
+```sql
+WHERE Sprinkles/Round[@color] == "pink"
+```
+
+Here we are saying that our desired node should have children path `Sprinkles/Round`. That is it should have `Sprinkles` sub node and that `Sprinkles` sub node should contain `Round` sub node. Then we say that this `Round` node should have an attribute `color` with literal value `pink`. Let us combine our previous `GET` with this where clause and explore.
+
+```sql
+GET Candy/Sweet
+WHERE Sprinkles/Round[@color] == "pink"
+```
+
+Here we say that we want `Sweet` node with parent node `Candy` and with child node path `Sprinkles/Round` where `Round` attribute `color` is equal to `pink`. So the below XML would match on 1 node `<Sweet name="Caramel">`.
+
+```xml
+<KidsJoy>
+    <Candy>
+        <Sweet name="Caramel">
+            <Sprinkles>
+                <Round color="pink"/>
+            </Sprinkles>
+        </Sweet>
+        <Sweet name="Lolipop">
+            <Sprinkles>
+                <Round color="jade"/>
+            </Sprinkles>
+        </Sweet>
+    </Candy>
+</KidsJoy>
+```
+
+Ofcourse you can always match on direct node attributes.
+
+```sql
+GET Candy/Sweet
+WHERE [@name] == "Lolipop"
+```
+
+this will instead pick `<Sweet name="Lolipop">` node from the XML above.
 
 ### SET
 
