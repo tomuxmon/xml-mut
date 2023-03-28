@@ -46,11 +46,13 @@ The syntax reminds SQL. It is plain and simple. It all starts with `GET`.
 
 ### GET
 
+Get syntax is expressed like shown below:
+
 ```sql
 GET {node_path}
 ```
 
-`get` is mandatory clause containing only the path of the node you intend to mutate. A simple example below:
+`GET` is mandatory clause containing only the path of the node you intend to mutate. A simple example below:
 
 ```sql
 GET Candy/Sweet
@@ -90,6 +92,12 @@ There are 2 kinds of predicates. `EXISTS` and `EQUALS`.
 ```
 
 #### Exists
+
+Exists predicate syntax is expressed like shown below:
+
+```sql
+{predicate_exists} ::= EXISTS {node_path}
+```
 
 A simple example where clause with exists predicate:
 
