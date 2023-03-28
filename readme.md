@@ -46,7 +46,7 @@ The syntax reminds SQL. It is plain and simple. It all starts with `GET`.
 
 ### GET
 
-Get syntax is expressed like shown below:
+[Get syntax](xml-mut-parse/src/get_clause.rs) is expressed like shown below:
 
 ```sql
 GET {node_path}
@@ -79,7 +79,7 @@ Here it will try to find all `Sweet` XML nodes having a parent node `Candy`. So 
 WHERE {predicates}
 ```
 
-Where clause allows filtering down desired nodes when node name match is not enough. You can have multiple predicates and you have to separate them with `and`.
+[Where clause](xml-mut-parse/src/where_clause.rs) allows filtering down desired nodes when node name match is not enough. You can have multiple predicates and you have to separate them with `and`.
 
 ```sql
 {predicate} and {predicate} and {predicate} ...
@@ -179,7 +179,7 @@ GET Candy/Sweet
 WHERE [@name] == "Lolipop"
 ```
 
-this will instead pick `<Sweet name="Lolipop">` node from the XML above.
+this will instead pick `<Sweet name="Lolipop">` node from the XML above. To see what kind of value selector are possible refer to [value selectors](#value-selectors) section.
 
 #### Mixing and matching
 
@@ -193,7 +193,180 @@ WHERE [@name] == "Lolipop"
 
 ### SET
 
-// tood
+Set is where mutation part begins. [set clause](xml-mut-parse/src/set_clause.rs) syntax is expressed like shown below:
+
+```sql
+SET {value_assignment}, {value_assignment}, ...
+{value_assignment} ::= {value_path} = {value_variant}
+```
+
+The only difference form `EQUALS` predicate is it uses a single `=` sign to denote the assignment (and confuse people). The main differnece is how it behaves. Lets look at some examples.
+
+```sql
+SET [@name] = "ToughCaramel"
+```
+
+Here we are saying we need want to set nodes `name` attribute with literal value `ToughCaramel`.
+
+If we had a full mutation like blow.
+
+```sql
+GET Candy/Sweet
+WHERE [@name] == "Caramel"
+SET [@name] = "ToughCaramel"
+```
+
+and would apply it to XML like below.
+
+```xml
+<KidsJoy>
+    <Candy>
+        <Sweet name="Caramel"/>
+        <Sweet name="Lolipop" />
+    </Candy>
+</KidsJoy>
+```
+
+we would get the following.
+
+```xml
+<KidsJoy>
+    <Candy>
+        <Sweet name="ToughCaramel"/>
+        <Sweet name="Lolipop" />
+    </Candy>
+</KidsJoy>
+```
+
+A simple syntax for a simple task.
+
+### Value selectors
+
+You might notice that both `equals` and `value assignment` end with squere bracket indexer `[]`. Currently it supports 4 types of value selectors.
+
+#### Attribute
+
+Attribute selector starts with `@` sign and looks like this: `[@name]`. Here we are saying we want to pick a value from nodes name attribute. Example in a where clause:
+
+```sql
+GET Project/ItemGroup/PackageReference
+WHERE [@Include] == "Mono.Cecil"
+```
+
+if we had XML like below:
+
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json" Version="7.0.2"/>
+        <PackageReference Include="Mono.Cecil" Version="0.11.4"/>
+    </ItemGroup>
+</Project>
+```
+
+A single node `<PackageReference Include="Mono.Cecil" Version="0.11.4"/>` would match the predicate.
+
+#### Text
+
+Text selector must always contain `text` literal inside. it laways looks like this: `[text]`. Here we are saying we want to pick nodes text as a value. Example in a set clause:
+
+```sql
+GET Project/ItemGroup/PackageReference
+SET [@Version] = Version[text]
+```
+
+so if we had XML like below:
+
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json">
+            <Version>7.0.2</Version>
+        </PackageReference>
+        <PackageReference Include="Mono.Cecil">
+            <Version>0.11.4</Version>
+        </PackageReference>
+    </ItemGroup>
+</Project>
+```
+
+Applying the mutation would result in xml like below:
+
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json" Version="7.0.2">
+            <Version>7.0.2</Version>
+        </PackageReference>
+        <PackageReference Include="Mono.Cecil" Version="0.11.4">
+            <Version>0.11.4</Version>
+        </PackageReference>
+    </ItemGroup>
+</Project>
+```
+
+Here we are missing a `delete` so most probably that is not an intended result. But it demonstrates the transfer of text value from `Version` sub node to `Version` attribute.
+
+#### Tail
+
+like with `text`, `tail` will always look the same: `[tail]`. Here we are saying we want to pick nodes tail as a value. Nodes tail is actually a text after nodes closing tag. Example tail usage below.
+
+```sql
+GET Project/ItemGroup
+SET PackageReference[tail] = ""
+```
+
+If we had XML like below.
+
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="Mono.Cecil"/>
+    </ItemGroup>
+</Project>
+```
+
+and would apply the mutation the result would be like below.
+
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json"/><PackageReference Include="Mono.Cecil"/>
+    </ItemGroup>
+</Project>
+```
+
+#### Name
+
+`name` will also always look the same: `[name]`. It get nodes name as a value. Example name usage below.
+
+```sql
+GET Project/ItemGroup/PackageReference
+SET [name] = "ProjectReference"
+```
+
+If we had XML like below.
+
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="Mono.Cecil"/>
+    </ItemGroup>
+</Project>
+```
+
+and would apply the mutation the result would be like below.
+
+```xml
+<Project>
+    <ItemGroup>
+        <ProjectReference Include="System.Text.Json"/>
+        <ProjectReference Include="Mono.Cecil"/>
+    </ItemGroup>
+</Project>
+```
 
 ### DELETE
 
