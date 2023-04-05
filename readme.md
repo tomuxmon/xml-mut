@@ -370,7 +370,48 @@ and would apply the mutation the result would be like below.
 
 ### DELETE
 
-// tood
+```sql
+DELETE {path_variant}, {path_variant}, ...
+```
+
+[Delete clause](xml-mut-parse/src/delete_clause.rs) allows removing parts of an XML. A path variant can be either a node path (target a specific XML to be removed) or a value selector (target a [specific value](#value-selectors) to be removed). An example was already presented in the begining.
+
+```sql
+DELETE Version
+```
+
+Here we are saying that we want to delete the `Version` sub node. So if we had a full Mutation like below.
+
+```sql
+GET Project/ItemGroup/PackageReference
+DELETE Version
+```
+
+And applied it to the XML like below.
+
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json">
+            <Version>7.0.2</Version>
+        </PackageReference>
+        <PackageReference Include="Mono.Cecil">
+            <Version>0.11.4</Version>
+        </PackageReference>
+    </ItemGroup>
+</Project>
+```
+
+The result would be like the one below.
+
+```xml
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="Mono.Cecil"/>
+    </ItemGroup>
+</Project>
+```
 
 ## CLI Usage Example
 
