@@ -469,6 +469,10 @@ There are 4 crates so far. [xml-mut-data](xml-mut-data/) - is where all data str
 
 it is still version `0.0.0`. But you can try it our and report any issues you had.
 
+## But tell me why
+
+Currently the only option to transform your XML is using [XSLT](https://www.w3.org/TR/xslt-30/). Most of the time it is an overkill. So for simple transformations simple readable definitions should be enough. XSLT is nothing but readable. So xml-mut is trying to bring the simplicity of SQL (only the simple parts 😅) into XML transformation land.
+
 ## License
 
 - MIT License ([LICENSE-MIT](LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
