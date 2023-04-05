@@ -71,32 +71,22 @@ Here it will try to find all `Sweet` XML nodes having a parent node `Candy`. So 
 </KidsJoy>
 ```
 
-`<Sweet name="Potato"/>` does not match because it does not have a parent of `Candy`.
+`<Sweet name="Potato"/>` does not match because it does not have a parent of `Candy`. `<Salty name="Lacris" />` is just too salty.
 
 ### WHERE
 
 ```sql
-WHERE {predicates}
+WHERE {predicate} and {predicate} and ...
 ```
 
-[Where clause](xml-mut-parse/src/where_clause.rs) allows filtering down desired nodes when node name match is not enough. You can have multiple predicates and you have to separate them with `and`.
-
-```sql
-{predicate} and {predicate} and {predicate} ...
-```
-
-There are 2 kinds of predicates. `EXISTS` and `EQUALS`.
-
-```sql
-{predicate} ::= {predicate_exists} | {predicate_equals}
-```
+[Where clause](xml-mut-parse/src/where_clause.rs) allows filtering down desired nodes when node name match is not enough. You can have multiple predicates and you have to separate them with `and`. There are 2 kinds of predicates. `EXISTS` and `EQUALS`.
 
 #### Exists
 
 Exists predicate syntax is expressed as shown below:
 
 ```sql
-{predicate_exists} ::= EXISTS {node_path}
+EXISTS {node_path}
 ```
 
 A simple example `where` clause with `exists` predicate:
@@ -134,13 +124,13 @@ and if we had XML like the below we would match on 1 node `<Sweet name="Lolipop"
 equals predicate syntax is expressed as shown below:
 
 ```sql
-{predicate_equals} ::= {value_path} == {value_variant}
+{value_path} == {value_variant}
 {value_path} ::= {node_path}{value_selector}
 {value_variant} ::= {value_path} | {value_literal}
 {value_literal} ::= {dis_just_a_string}
 ```
 
-Oh boy, it is so unreadable above. Let us look at a simple example of `where` clause with `equals` predicate:
+Oh boy, it is so unreadable above. Let us look at a simple example of `where` clause with `equals` predicate instead:
 
 ```sql
 WHERE Sprinkles/Round[@color] == "pink"
