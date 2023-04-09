@@ -1,0 +1,5 @@
+GET ItemGroup/PackageReference
+SET [@Version] = Version[text],
+    [text] = "",
+    [tail] = ""
+DELETE Version

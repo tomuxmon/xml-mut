@@ -37,6 +37,8 @@ fn with_input_expect_xml_mutation_output(
         .apply_extended(replacers)
         .expect("apply should not fail");
 
+    // fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
+
     assert_eq!(xml_expected_string, xml_new_string);
 }
 
@@ -64,5 +66,14 @@ fn set_text_sub_node_exists_mutation() {
         "tests/set_text_sub_node_exists/in.xml",
         "tests/set_text_sub_node_exists/mut.xmlmut",
         "tests/set_text_sub_node_exists/out.xml",
+    );
+}
+
+#[test]
+fn package_ref_version_single_line() {
+    with_input_expect_xml_mutation_output(
+        "tests/package_ref_version_single_line/in.xml",
+        "tests/package_ref_version_single_line/mut.xmlmut",
+        "tests/package_ref_version_single_line/out.xml",
     );
 }
