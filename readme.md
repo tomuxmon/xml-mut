@@ -79,7 +79,7 @@ Here it will try to find all `Sweet` XML nodes having a parent node `Candy`. So 
 WHERE {predicate} and {predicate} and ...
 ```
 
-[Where clause](xml-mut-parse/src/where_clause.rs) allows filtering down desired nodes when node name match is not enough. You can have multiple predicates and you have to separate them with `and`. There are 2 kinds of predicates. `EXISTS` and `EQUALS`.
+Optional [where clause](xml-mut-parse/src/where_clause.rs) allows filtering down desired nodes when node name match is not enough. You can have multiple predicates and you have to separate them with `and`. There are 2 kinds of predicates. `EXISTS` and `EQUALS`.
 
 #### Exists
 
