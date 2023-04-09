@@ -1,0 +1,6 @@
+<Project>
+    <ItemGroup>
+        <ProjectReference Include="System.Text.Json"/>
+        <ProjectReference Include="Mono.Cecil"/>
+    </ItemGroup>
+</Project>

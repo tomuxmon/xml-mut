@@ -43,8 +43,17 @@ fn with_input_expect_xml_mutation_output(
 #[test]
 fn package_ref_version_mutation() {
     with_input_expect_xml_mutation_output(
-        "tests/package_ref_version/input.xml",
-        "tests/package_ref_version/mutation.xmlmut",
-        "tests/package_ref_version/output.xml",
+        "tests/package_ref_version/in.xml",
+        "tests/package_ref_version/mut.xmlmut",
+        "tests/package_ref_version/out.xml",
+    );
+}
+
+#[test]
+fn package_ref_to_project_ref_mutation() {
+    with_input_expect_xml_mutation_output(
+        "tests/package_ref_to_project_ref/in.xml",
+        "tests/package_ref_to_project_ref/mut.xmlmut",
+        "tests/package_ref_to_project_ref/out.xml",
     );
 }

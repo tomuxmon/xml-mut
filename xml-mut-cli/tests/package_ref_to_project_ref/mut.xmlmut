@@ -1,0 +1,2 @@
+GET Project/ItemGroup/PackageReference
+SET [name] = "ProjectReference"
