@@ -15,10 +15,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let xut = fs::read_to_string(mut_cli.xml_mut_path.clone())?;
 
-    let (non_parsed, ref statements) =
-        statements(xut.as_str()).expect("could not parse statements");
+    let (non_parsed, ref grammar) =
+        xml_mut_grammar(xut.as_str()).expect("could not parse statements");
 
-    let mutations = &statements
+    let mutations = &grammar
+        .statements
         .iter()
         .filter_map(|s| match s {
             Statement::Mutation(rep) => Some(rep),

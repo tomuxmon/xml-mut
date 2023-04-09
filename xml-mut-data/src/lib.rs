@@ -115,8 +115,13 @@ pub struct Mutation<'a> {
     pub set_clause: Option<SetClause<'a>>,
     pub delete_clause: Option<DeleteClause<'a>>,
 }
-
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Statement<'a> {
     Mutation(Mutation<'a>),
     Comment(&'a str),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct XmlMutGrammar<'a> {
+    pub statements: Vec<Statement<'a>>,
 }

@@ -7,7 +7,7 @@ use nom::{
     sequence::delimited,
     IResult,
 };
-use xml_mut_data::Statement;
+use xml_mut_data::{Statement, XmlMutGrammar};
 
 fn block_comment(s: &str) -> IResult<&str, &str> {
     let (s, comment) = delimited(tag("/*"), take_until("*/"), tag("*/"))(s)?;
@@ -25,9 +25,10 @@ pub fn statement(s: &str) -> IResult<&str, Statement> {
     Ok((s, Statement::Mutation(res)))
 }
 
-pub fn statements(s: &str) -> IResult<&str, Vec<Statement>> {
+pub fn xml_mut_grammar(s: &str) -> IResult<&str, XmlMutGrammar> {
     let (s, _) = multispace0(s)?;
-    let (s, res) = separated_list1(multispace1, statement)(s)?;
+    let (s, statements) = separated_list1(multispace1, statement)(s)?;
     let (s, _) = multispace0(s)?;
-    Ok((s, res))
+
+    Ok((s, XmlMutGrammar { statements }))
 }
