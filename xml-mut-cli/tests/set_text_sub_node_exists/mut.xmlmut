@@ -1,0 +1,2 @@
+GET Project/ItemGroup
+SET [text] = "bamba"

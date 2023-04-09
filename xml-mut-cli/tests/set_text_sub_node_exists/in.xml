@@ -1,0 +1,6 @@
+<Project>
+    <ItemGroup>
+        <PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="Mono.Cecil"/>
+    </ItemGroup>
+</Project>

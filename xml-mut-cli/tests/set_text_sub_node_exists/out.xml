@@ -1,0 +1,5 @@
+<Project>
+    <ItemGroup>bamba<PackageReference Include="System.Text.Json"/>
+        <PackageReference Include="Mono.Cecil"/>
+    </ItemGroup>
+</Project>
