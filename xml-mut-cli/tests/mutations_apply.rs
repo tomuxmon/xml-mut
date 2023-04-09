@@ -4,17 +4,17 @@ use xml_mut_data::{Mutation, Statement};
 use xml_mut_impl::prelude::DocumentExt;
 use xml_mut_parse::prelude::*;
 
-#[test]
-fn package_ref_version_mutation() {
-    let xml_path = "tests/package_ref_version/input.xml";
-    let xml_string = fs::read_to_string(xml_path).expect("xml file should exist");
+fn with_input_expect_xml_mutation_output(
+    xml_input_path: &str,
+    xml_mut_path: &str,
+    xml_output_path: &str,
+) {
+    let xml_string = fs::read_to_string(xml_input_path).expect("xml file should exist");
     let xml_doc = Document::parse(xml_string.as_str()).expect("should be avalid xml");
 
-    let xml_expected_path = "tests/package_ref_version/output.xml";
     let xml_expected_string =
-        fs::read_to_string(xml_expected_path).expect("xml output file should exist");
+        fs::read_to_string(xml_output_path).expect("xml output file should exist");
 
-    let xml_mut_path = "tests/package_ref_version/mutation.xmlmut";
     let xml_mut_string = fs::read_to_string(xml_mut_path).expect("xml mutation file should exist");
     let (non_parsed, ref grammar) =
         xml_mut_grammar(xml_mut_string.as_str()).expect("could not parse statements");
@@ -38,4 +38,13 @@ fn package_ref_version_mutation() {
         .expect("apply should not fail");
 
     assert_eq!(xml_expected_string, xml_new_string);
+}
+
+#[test]
+fn package_ref_version_mutation() {
+    with_input_expect_xml_mutation_output(
+        "tests/package_ref_version/input.xml",
+        "tests/package_ref_version/mutation.xmlmut",
+        "tests/package_ref_version/output.xml",
+    );
 }
