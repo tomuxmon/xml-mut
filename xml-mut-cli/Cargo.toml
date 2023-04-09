@@ -15,7 +15,7 @@ edition = "2021"
 
 [[bin]]
 name = "xml-mut"
-path = "xml-mut-cli/src/main.rs"
+path = "src/main.rs"
 
 [dependencies]
 roxmltree = "0.18.0"
