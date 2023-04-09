@@ -1,7 +1,21 @@
 [package]
 name = "xml-mut-cli"
 version = "0.0.0"
+authors = ["Tomas Dambrauskas <tomas.sql@proton.me>"]
+description = """
+A simple XML mutation definition language resembling SQL. 
+Define your simple XML transformations in an easy and readable way.
+"""
+keywords = ["xml", "mutation", "dsl", "transform"]
+documentation = "https://github.com/tomuxmon/xml-mut"
+homepage = "https://github.com/tomuxmon/xml-mut"
+repository = "https://github.com/tomuxmon/xml-mut"
+license = "MIT OR Apache-2.0"
 edition = "2021"
+
+[[bin]]
+name = "xml-mut"
+path = "xml-mut-cli/src/main.rs"
 
 [dependencies]
 roxmltree = "0.18.0"
