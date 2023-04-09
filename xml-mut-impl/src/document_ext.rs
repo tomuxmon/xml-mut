@@ -1,4 +1,4 @@
-use crate::prelude::{Mutable, NodeExtensions, Replacer, Valueable};
+use crate::prelude::{Mutable, NodeExtensions, ReplaceError, Replacer, Valueable};
 use roxmltree::{Document, Node};
 use xml_mut_data::{Mutation, ValueSelector};
 
@@ -12,6 +12,7 @@ pub trait DocumentExt {
     }
     fn get_end_tag_trim_replacers(&self) -> Vec<Replacer>;
     fn apply(&self, replacers: &[Replacer]) -> Option<String>;
+    fn apply_extended(&self, replacers: &[Replacer]) -> Result<String, ReplaceError>;
 }
 
 impl<'input> DocumentExt for Document<'input> {
@@ -42,7 +43,8 @@ impl<'input> DocumentExt for Document<'input> {
             })
             .collect()
     }
-
+    // TODO: Option -> Result
+    // TODO: String -> Self (or Box<Self> at least?)
     fn apply(&self, replacers: &[Replacer]) -> Option<String> {
         if replacers.is_empty() {
             return None;
@@ -69,6 +71,27 @@ impl<'input> DocumentExt for Document<'input> {
         new_xml.push_str(&self.input_text()[offset..self.input_text().len()]);
 
         Some(new_xml)
+    }
+
+    fn apply_extended(&self, replacers: &[Replacer]) -> Result<String, ReplaceError> {
+        if let Some(new_xml) = self.apply(replacers) {
+            // NOTE: reparse resulting xml to validate it.
+            let new_doc = match Document::parse(&new_xml) {
+                Ok(d) => d,
+                Err(error) => {
+                    return Err(ReplaceError::GeneratedXmlInvalid(error));
+                }
+            };
+            // NOTE: post processing
+            let trim_replacers = &new_doc.get_end_tag_trim_replacers();
+            if let Some(n) = new_doc.apply(trim_replacers) {
+                Ok(n)
+            } else {
+                Ok(new_xml)
+            }
+        } else {
+            Err(ReplaceError::NoChange)
+        }
     }
 }
 

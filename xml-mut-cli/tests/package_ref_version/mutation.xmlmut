@@ -1,0 +1,3 @@
+GET Project/ItemGroup/PackageReference
+SET [@Version] = Version[text]
+DELETE Version

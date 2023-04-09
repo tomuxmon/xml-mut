@@ -38,36 +38,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let doc: Document = Document::parse(xml.as_str())?;
         let replacers = &doc.get_replacers_all(mutations);
 
-        if let Some(new_xml) = doc.apply(replacers) {
-            // NOTE: reparse resulting xml to validate it.
-            let new_doc = match Document::parse(&new_xml) {
-                Ok(d) => d,
-                Err(error) => {
-                    print!("xml is invalid after applying replacers: {error}");
-                    return Err(Box::new(error));
-                }
-            };
-
-            // NOTE: post processing
-            let trim_replacers = &new_doc.get_end_tag_trim_replacers();
-            let final_text = if let Some(n) = new_doc.apply(trim_replacers) {
-                n
-            } else {
-                new_xml
-            };
-
-            let replacers_len = replacers.len() + trim_replacers.len();
-
-            match fs::write(xml_path, final_text) {
-                Ok(_) => println!("{:?} - updated with {} replaces", xml_path, replacers_len),
-                Err(err) => println!(
+        match doc.apply_extended(replacers) {
+            Ok(final_xml) => match fs::write(xml_path, final_xml) {
+                Ok(_) => println!("{:?} - updated with {} replaces", xml_path, replacers.len()),
+                Err(io_err) => println!(
                     "{:?} - updated with {} replaces, BUT failed writing to disk: {}",
-                    xml_path, replacers_len, err
+                    xml_path,
+                    replacers.len(),
+                    io_err
                 ),
-            }
-        } else {
-            println!("{:?} - no changes", xml_path);
-        }
+            },
+            Err(err) => match err {
+                ReplaceError::NoChange => println!("{:?} - no changes", xml_path),
+                ReplaceError::ReplacerOverlap(r1, r2) => println!(
+                    "{:?} - replacer {:?} overlaps with replacer {:?}",
+                    xml_path, r1, r2
+                ),
+                ReplaceError::GeneratedXmlInvalid(xml_err) => {
+                    println!("{:?} - generated xml is invalid: {}", xml_path, xml_err)
+                }
+            },
+        };
     }
 
     Ok(())

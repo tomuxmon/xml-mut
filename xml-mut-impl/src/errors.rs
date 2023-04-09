@@ -16,6 +16,7 @@ pub enum AssignError {
 
 #[derive(Debug)]
 pub enum ReplaceError {
+    NoChange,
     ReplacerOverlap(Replacer, Replacer),
-    GeneratedXmlInvalid(String),
+    GeneratedXmlInvalid(roxmltree::Error),
 }
