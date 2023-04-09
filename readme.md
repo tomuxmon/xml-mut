@@ -40,6 +40,16 @@ Here we are saying we need to `get` an XML node having a path of `Project`, `Ite
 
 Your eyes hurt much less looking into XML above 😎.
 
+## Instalation
+
+You can install the CLI tool using cargo install. In case you have not installed the Rust language yet [do it](https://www.rust-lang.org/tools/install) first.
+
+```bash
+ cargo install xml-mut-cli --git https://github.com/tomuxmon/xml-mut
+```
+
+Some day it willl be mature enough, and we will be able to ommit the `--git` part. Next let usdiscuss the actual mutation capabilities.
+
 ## Mutation syntax
 
 The syntax reminds SQL. It is plain and simple. It all starts with `GET`.
