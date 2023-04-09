@@ -1,2 +1,5 @@
 GET Project/ItemGroup/PackageReference
-SET [name] = "ProjectReference"
+WHERE [@Include] == "Mono.Cecil"
+SET [name] = "ProjectReference",
+    [@IncludeBackup] = [@Include],
+    [@Include] = "some/path/to/Mono.Cecil.csproj"
