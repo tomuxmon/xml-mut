@@ -40,16 +40,6 @@ Here we are saying we need to `get` an XML node having a path of `Project`, `Ite
 
 Your eyes hurt much less looking into XML above 😎.
 
-## Instalation
-
-You can install the CLI tool using cargo install. In case you have not installed the Rust language yet [do it](https://www.rust-lang.org/tools/install) first.
-
-```bash
- cargo install xml-mut-cli --git https://github.com/tomuxmon/xml-mut
-```
-
-Some day it willl be mature enough, and we will be able to ommit the `--git` part. Next let usdiscuss the actual mutation capabilities.
-
 ## Mutation syntax
 
 The syntax reminds SQL. It is plain and simple. It all starts with `GET`.
@@ -413,12 +403,22 @@ The result would be like the one below.
 </Project>
 ```
 
-## CLI Usage Example
+## CLI Instalation
+
+Now that you know the language lets put it into use with some CLI. You can install the CLI tool using cargo install. In case you have not installed the Rust language yet [do it](https://www.rust-lang.org/tools/install) first.
+
+```bash
+ cargo install xml-mut-cli --git https://github.com/tomuxmon/xml-mut
+```
+
+Some day it willl be mature enough, and we will be able to ommit the `--git` part.
+
+## CLI Usage Examples
 
 When using CLI you need to supply a path to your XML mutation file. A single XML mutation file can contain multiple mutation definitions. Next, you decide if you want to specify XML files one by one and use the [include command](#include-command) or scan the directory and use the [scan command](#scan-command). You can consult how to use CLI with a `help` call.
 
 ```bash
-xml-mut-cli --help
+xml-mut --help
 ```
 
 ### include command
@@ -426,19 +426,19 @@ xml-mut-cli --help
 You can consult how to use the include command with a `help` call:
 
 ```bash
-xml-mut-cli include --help
+xml-mut include --help
 ```
 
 The usage is as follows:
 
 ```bash
-xml-mut-cli <XML_MUT_PATH> include --xml-path <XML_PATH>
+xml-mut <XML_MUT_PATH> include --xml-path <XML_PATH>
 ```
 
 Here `<XML_MUT_PATH>` is a path to your XML mutation file. You can give it `.xmlmut` extension but it is not mandatory so far. `--xml-path` or `-x` argument can be repeated allowing you to include multiple XML files to be mutated. So a call could look something like this:
 
 ```bash
-xml-mut-cli ~/pref-version-fix.xmlmut include -x ~/code/awesome.csproj -x ~/code/amazing.fsproj
+xml-mut ~/pref-version-fix.xmlmut include -x ~/code/awesome.csproj -x ~/code/amazing.fsproj
 ```
 
 ### scan command
@@ -446,19 +446,19 @@ xml-mut-cli ~/pref-version-fix.xmlmut include -x ~/code/awesome.csproj -x ~/code
 You can consult how to use the `scan` command with a `help` call:
 
 ```bash
-xml-mut-cli scan --help
+xml-mut scan --help
 ```
 
 The usage is as follows:
 
 ```bash
-xml-mut-cli <XML_MUT_PATH> scan --extension <EXTENSION> <BASE_PATH>
+xml-mut <XML_MUT_PATH> scan --extension <EXTENSION> <BASE_PATH>
 ```
 
 Here `<XML_MUT_PATH>` is a path to your XML mutation file. You can give it `.xmlmut` extension but it is not mandatory so far. `--extension` or `-e` allows specifying what file extensions to include when scanning the directory. You can specify multiple extensions. `<BASE_PATH>` defines a path you want to scan. So a call could look something like this:
 
 ```bash
-xml-mut-cli ~/pref-version-fix.xmlmut scan -e csproj -e fsproj ~/code
+xml-mut ~/pref-version-fix.xmlmut scan -e csproj -e fsproj ~/code
 ```
 
 ## Architexture
