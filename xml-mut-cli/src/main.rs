@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let doc: Document = Document::parse(xml.as_str())?;
         let replacers = &doc.get_replacers_all(mutations);
 
-        match doc.apply_extended(replacers) {
+        match doc.apply(replacers) {
             Ok(final_xml) => match fs::write(xml_path, final_xml) {
                 Ok(_) => println!("{:?} - updated with {} replaces", xml_path, replacers.len()),
                 Err(io_err) => println!(

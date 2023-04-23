@@ -34,7 +34,7 @@ fn with_input_expect_xml_mutation_output(
 
     let replacers = &xml_doc.get_replacers_all(mutations);
     let xml_new_string = xml_doc
-        .apply_extended(replacers)
+        .apply(replacers)
         .expect("apply should not fail");
 
     // fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
