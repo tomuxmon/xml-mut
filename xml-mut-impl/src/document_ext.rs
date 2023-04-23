@@ -11,6 +11,7 @@ pub trait DocumentExt {
             .collect()
     }
     fn get_end_tag_trim_replacers(&self) -> Vec<Replacer>;
+    // TODO: String -> Self (or Box<Self> at least?)
     fn apply_internal(&self, replacers: &[Replacer]) -> Result<String, ReplaceError>;
     fn apply(&self, replacers: &[Replacer]) -> Result<String, ReplaceError>;
 }
@@ -43,14 +44,28 @@ impl<'input> DocumentExt for Document<'input> {
             })
             .collect()
     }
-    // TODO: Option -> Result
-    // TODO: String -> Self (or Box<Self> at least?)
+
     fn apply_internal(&self, replacers: &[Replacer]) -> Result<String, ReplaceError> {
         if replacers.is_empty() {
             return Err(ReplaceError::NoChange);
         }
 
-        // TODO: validate replacer overlaps
+        let mut replacers_sorted = replacers.to_vec();
+        replacers_sorted.sort_by(|a, b| a.bounds_cmp(b));
+
+        let mut replacer_prev = replacers_sorted
+            .first()
+            .expect("already know replacers isnot empty");
+
+        for replacer in replacers_sorted.iter().skip(1) {
+            if replacer.overlaps(replacer_prev) {
+                return Err(ReplaceError::ReplacerOverlap(
+                    replacer.clone(),
+                    replacer_prev.clone(),
+                ));
+            }
+            replacer_prev = replacer;
+        }
 
         let new_len = usize::try_from(
             i32::try_from(self.input_text().len()).unwrap_or(0)
@@ -60,8 +75,6 @@ impl<'input> DocumentExt for Document<'input> {
 
         let mut new_xml = String::with_capacity(new_len);
         let mut offset = 0;
-        let mut replacers_sorted = replacers.to_vec();
-        replacers_sorted.sort_by(|a, b| a.bounds_cmp(b));
 
         for replacer in replacers_sorted {
             new_xml.push_str(&self.input_text()[offset..replacer.bounds.start]);

@@ -23,4 +23,8 @@ impl Replacer {
             self.bounds.start.cmp(&other.bounds.start)
         }
     }
+
+    pub fn overlaps(&self, other: &Self) -> bool {
+        self.bounds.start <= other.bounds.end && self.bounds.end >= other.bounds.start
+    }
 }
