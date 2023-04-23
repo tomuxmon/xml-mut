@@ -24,7 +24,7 @@ impl Replacer {
         }
     }
 
-    /// Checks if the bounds of this thrplacer do not interfere with other replacer bounds.
+    /// Checks if the bounds of this replacer do not interfere with other replacer bounds.
     /// Touching other bounds is still ok.
     ///
     /// # Examples
