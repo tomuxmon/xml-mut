@@ -24,7 +24,21 @@ impl Replacer {
         }
     }
 
+    /// Checks if the bounds of this thrplacer do not interfere with other replacer bounds.
+    /// Touching other bounds is still ok.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use xml_mut_impl::prelude::Replacer;
+    ///
+    /// let x = Replacer { bounds : 0..10, replacement : "".to_string() };
+    /// let y = Replacer { bounds : 10..20, replacement : "".to_string() };
+    ///
+    /// assert!(!x.overlaps(&y));
+    /// ```
+
     pub fn overlaps(&self, other: &Self) -> bool {
-        self.bounds.start <= other.bounds.end && self.bounds.end >= other.bounds.start
+        self.bounds.start < other.bounds.end && self.bounds.end > other.bounds.start
     }
 }

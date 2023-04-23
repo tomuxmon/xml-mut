@@ -60,8 +60,8 @@ impl<'input> DocumentExt for Document<'input> {
         for replacer in replacers_sorted.iter().skip(1) {
             if replacer.overlaps(replacer_prev) {
                 return Err(ReplaceError::ReplacerOverlap(
-                    replacer.clone(),
                     replacer_prev.clone(),
+                    replacer.clone(),
                 ));
             }
             replacer_prev = replacer;
