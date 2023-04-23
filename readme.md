@@ -471,7 +471,31 @@ it is still version `0.0.0`. But you can try it out and report any issues you ha
 
 ## But tell me why
 
-Currently, the only option to transform your XML is using [XSLT](https://www.w3.org/TR/xslt-30/). Most of the time it is overkill. So for simple transformations, simple readable definitions should be enough. XSLT is nothing but readable. So xml-mut is trying to bring the simplicity of SQL (only the simple parts 😅) into XML transformation land.
+Currently, the only option to transform your XML is using [XSLT](https://www.w3.org/TR/xslt-30/). Most of the time it is overkill. Let us  compare with an example we had [in the beggining](#example). What we actually wanted is a "simple xslt to get version sub node and place it as an attribute of the node". It has been a long long time since I wrote XSLT. So instead we will [cheat and ask AI to write it for us](https://sl.bing.net/eg2eoXzw2dU).
+
+```xml
+<xsl:template match="node()">
+    <xsl:copy>
+        <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+</xsl:template>
+
+<xsl:template match="version">
+    <xsl:attribute name="version">
+        <xsl:value-of select="."/>
+    </xsl:attribute>
+</xsl:template>
+```
+
+This does not look simple. We have to learn the complicated XSLT language and the syntax. Also, XSLT is same old XML. Instead, for simple transformations, simple readable definitions should be enough. Above XSLT could be expressed in a much simpler way with xml-mut below.
+
+```sql
+GET Project/ItemGroup/PackageReference
+SET [@Version] = Version[text]
+DELETE Version
+```
+
+So xml-mut is trying to bring the simplicity of SQL (only the simple parts 😅) into XML transformation land.
 
 ## License
 
