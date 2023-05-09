@@ -1,21 +1,39 @@
 use roxmltree::Document;
-use std::fs;
+use std::{env, fs, path::PathBuf};
 use xml_mut_data::{Mutation, Statement};
 use xml_mut_impl::prelude::DocumentExt;
 use xml_mut_parse::prelude::*;
 
 fn with_input_expect_xml_mutation_output(
+    common_test_path: &str,
     xml_input_path: &str,
     xml_mut_path: &str,
     xml_output_path: &str,
 ) {
-    let xml_string = fs::read_to_string(xml_input_path).expect("xml file should exist");
+    let mut common_path = env::current_dir().expect("could not get the current dir");
+    if !common_path.ends_with("xml-mut-cli"){
+        common_path.push("xml-mut-cli")
+    }
+    common_path.push("tests");
+    common_path.push(common_test_path);
+
+    let mut xml_input_path_buf = common_path.clone();
+    xml_input_path_buf.push(xml_input_path);
+
+    let mut xml_output_path_buf = common_path.clone();
+    xml_output_path_buf.push(xml_output_path);
+
+    let mut xml_mut_path_buf = common_path.clone();
+    xml_mut_path_buf.push(xml_mut_path);
+
+    let xml_string = fs::read_to_string(xml_input_path_buf).expect("xml file should exist");
+
     let xml_doc = Document::parse(xml_string.as_str()).expect("should be avalid xml");
 
     let xml_expected_string =
-        fs::read_to_string(xml_output_path).expect("xml output file should exist");
+        fs::read_to_string(xml_output_path_buf).expect("xml output file should exist");
 
-    let xml_mut_string = fs::read_to_string(xml_mut_path).expect("xml mutation file should exist");
+    let xml_mut_string = fs::read_to_string(xml_mut_path_buf).expect("xml mutation file should exist");
     let (non_parsed, ref grammar) =
         xml_mut_grammar(xml_mut_string.as_str()).expect("could not parse statements");
 
@@ -33,9 +51,7 @@ fn with_input_expect_xml_mutation_output(
         .collect::<Vec<&Mutation>>();
 
     let replacers = &xml_doc.get_replacers_all(mutations);
-    let xml_new_string = xml_doc
-        .apply(replacers)
-        .expect("apply should not fail");
+    let xml_new_string = xml_doc.apply(replacers).expect("apply should not fail");
 
     // fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
 
@@ -44,36 +60,45 @@ fn with_input_expect_xml_mutation_output(
 
 #[test]
 fn package_ref_version_mutation() {
-    with_input_expect_xml_mutation_output(
-        "tests/package_ref_version/in.xml",
-        "tests/package_ref_version/mut.xmlmut",
-        "tests/package_ref_version/out.xml",
-    );
+    with_input_expect_xml_mutation_output("package_ref_version", "in.xml", "mut.xmlmut", "out.xml");
 }
 
 #[test]
 fn package_ref_to_project_ref_mutation() {
     with_input_expect_xml_mutation_output(
-        "tests/package_ref_to_project_ref/in.xml",
-        "tests/package_ref_to_project_ref/mut.xmlmut",
-        "tests/package_ref_to_project_ref/out.xml",
+        "package_ref_to_project_ref",
+        "in.xml",
+        "mut.xmlmut",
+        "out.xml",
+    );
+}
+
+#[test]
+fn package_ref_to_project_ref_sub_node_mutation() {
+    with_input_expect_xml_mutation_output(
+        "package_ref_to_project_ref_sub_node",
+        "in.xml",
+        "mut.xmlmut",
+        "out.xml",
     );
 }
 
 #[test]
 fn set_text_sub_node_exists_mutation() {
     with_input_expect_xml_mutation_output(
-        "tests/set_text_sub_node_exists/in.xml",
-        "tests/set_text_sub_node_exists/mut.xmlmut",
-        "tests/set_text_sub_node_exists/out.xml",
+        "set_text_sub_node_exists",
+        "in.xml",
+        "mut.xmlmut",
+        "out.xml",
     );
 }
 
 #[test]
 fn package_ref_version_single_line() {
     with_input_expect_xml_mutation_output(
-        "tests/package_ref_version_single_line/in.xml",
-        "tests/package_ref_version_single_line/mut.xmlmut",
-        "tests/package_ref_version_single_line/out.xml",
+        "package_ref_version_single_line",
+        "in.xml",
+        "mut.xmlmut",
+        "out.xml",
     );
 }

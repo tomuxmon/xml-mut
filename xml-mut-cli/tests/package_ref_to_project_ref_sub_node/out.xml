@@ -1,0 +1,10 @@
+<Project>
+    <ItemGroup>
+        <ProjectReference Include="path/to/project.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" OutputItemType="Analyzer">
+            <IncludeAssets>analyzers</IncludeAssets>
+        </ProjectReference>
+        <PackageReference Include="Roslynator.Formatting.Analyzers" Version="4.3.0" >
+            <IncludeAssets>analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+</Project>

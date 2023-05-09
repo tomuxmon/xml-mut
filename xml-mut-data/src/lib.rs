@@ -18,7 +18,7 @@ pub enum ValueSelector<'a> {
     Attribute(&'a str),
     Text,
     Tail,
-    Name,
+    Name, // not valid when xml node has start and end tags.
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

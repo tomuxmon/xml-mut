@@ -71,6 +71,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                     },
                 }
             }
+            // possible to have 2 boundshere depending on XML node 
             ValueSelector::Name => {
                 Some(self.range().start + 1..self.range().start + 1 + self.tag_name().name().len())
             }
@@ -145,6 +146,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
 
         // NOTE: the rest should have a proper bounds,
         // no more special cases
+        // TODO: mulriple boundsif renaming node!
         let bounds = match assignment_node.get_bounds(&assignment.target.selector) {
             Some(b) => b,
             None => {
