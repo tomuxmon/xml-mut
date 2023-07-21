@@ -1,5 +1,6 @@
 use crate::cli::MutCli;
 use clap::Parser;
+use itertools::Itertools;
 use roxmltree::*;
 use std::fs;
 use xml_mut_data::{Mutation, Statement};
@@ -63,4 +64,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+fn get_nodes_as_text(
+    paths: Vec<std::path::PathBuf>,
+    mutations: &[&Mutation],
+) -> Result<String, Box<dyn std::error::Error>> {
+    let mut nodes: Vec<String> = Vec::new();
+
+    for xml_path in paths {
+        let xml = fs::read_to_string(xml_path.clone())?;
+        let doc: Document = Document::parse(xml.as_str())?;
+        let mut found = doc.get_fit_nodes_all(mutations);
+        println!("{} found in {:?}", found.len(), xml_path,);
+        nodes.append(&mut found);
+    }
+
+    Ok(nodes
+        .iter()
+        .unique_by(|p| *p)
+        .sorted_by(|a, b| Ord::cmp(&a, &b))
+        .join("\n"))
 }
