@@ -3,6 +3,13 @@ use roxmltree::{Document, Node};
 use xml_mut_data::{Mutation, ValueSelector};
 
 pub trait DocumentExt {
+    fn get_fit_nodes(&self, mutation: &Mutation) -> Vec<String>;
+    fn get_fit_nodes_all(&self, mutations: &[&Mutation]) -> Vec<String> {
+        mutations
+            .iter()
+            .flat_map(|m| self.get_fit_nodes(m))
+            .collect()
+    }
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer>;
     fn get_replacers_all(&self, mutations: &[&Mutation]) -> Vec<Replacer> {
         mutations
@@ -17,6 +24,13 @@ pub trait DocumentExt {
 }
 
 impl<'input> DocumentExt for Document<'input> {
+    fn get_fit_nodes(&self, mutation: &Mutation) -> Vec<String> {
+        self.descendants()
+            .filter(|n| n.is_fit(mutation))
+            .map(|n| n.get_input_text().to_string())
+            .collect()
+    }
+
     fn get_replacers(&self, mutation: &Mutation) -> Vec<Replacer> {
         self.descendants()
             .filter(|n| n.is_fit(mutation))
