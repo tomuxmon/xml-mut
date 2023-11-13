@@ -1,5 +1,5 @@
 use roxmltree::Document;
-use std::{env, fs, path::PathBuf};
+use std::{env, fs};
 use xml_mut_data::{Mutation, Statement};
 use xml_mut_impl::prelude::DocumentExt;
 use xml_mut_parse::prelude::*;
@@ -11,7 +11,7 @@ fn with_input_expect_xml_mutation_output(
     xml_output_path: &str,
 ) {
     let mut common_path = env::current_dir().expect("could not get the current dir");
-    if !common_path.ends_with("xml-mut-cli"){
+    if !common_path.ends_with("xml-mut-cli") {
         common_path.push("xml-mut-cli")
     }
     common_path.push("tests");
@@ -33,7 +33,8 @@ fn with_input_expect_xml_mutation_output(
     let xml_expected_string =
         fs::read_to_string(xml_output_path_buf).expect("xml output file should exist");
 
-    let xml_mut_string = fs::read_to_string(xml_mut_path_buf).expect("xml mutation file should exist");
+    let xml_mut_string =
+        fs::read_to_string(xml_mut_path_buf).expect("xml mutation file should exist");
     let (non_parsed, ref grammar) =
         xml_mut_grammar(xml_mut_string.as_str()).expect("could not parse statements");
 

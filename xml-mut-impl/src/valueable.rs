@@ -24,6 +24,7 @@ pub trait Valueable {
 }
 
 impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
+    /// possible to have 1 or 2 bounds
     fn get_bounds(&self, ending: &ValueSelector) -> Option<Range<usize>> {
         match ending {
             ValueSelector::Attribute(name) => {
@@ -72,6 +73,7 @@ impl<'a, 'input: 'a> Valueable for Node<'a, 'input> {
                 }
             }
             // possible to have 2 boundshere depending on XML node 
+            // 
             ValueSelector::Name => {
                 Some(self.range().start + 1..self.range().start + 1 + self.tag_name().name().len())
             }

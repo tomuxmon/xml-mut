@@ -23,7 +23,6 @@ pub fn value_source(s: &str) -> IResult<&str, ValueSelector> {
         match name {
             "text" => (s, ValueSelector::Text),
             "tail" => (s, ValueSelector::Tail),
-            "name" => (s, ValueSelector::Name),
             _ => {
                 return Err(nom::Err::Error(nom::error::Error {
                     code: nom::error::ErrorKind::Tag,

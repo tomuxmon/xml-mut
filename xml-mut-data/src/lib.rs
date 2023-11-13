@@ -13,12 +13,20 @@ impl<'a> Deref for NodePath<'a> {
     }
 }
 
+/// A selector that could be target of a single value or a delete.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueSelector<'a> {
+    /// Nodes attribute
     Attribute(&'a str),
+    /// Nodes inner text
     Text,
+    /// Text after nodes end tag
     Tail,
-    Name, // not valid when xml node has start and end tags.
+    /// Nodes name, opssibly located in 2 places if the node has a closing tag
+    /// you can not delete name hence it isinvalid
+    /// rename should have aseparate syntax
+    #[deprecated]
+    Name,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
