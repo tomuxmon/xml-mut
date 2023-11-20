@@ -6,3 +6,5 @@ members = [
     "xml-mut-xot",
     "xml-mut-data",
 ]
+
+resolver = "2"
