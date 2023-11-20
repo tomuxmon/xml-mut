@@ -197,9 +197,18 @@ impl Valueable for Xot {
     }
 
     fn apply(&mut self, node: Node, mutation: &Mutation) -> Result<(), Error> {
-        // TODO: apply at the same level
-        
-        todo!()
+        if let Some(set_clause) = mutation.set_clause.clone() {
+            for ref assignment in set_clause.assignments.into_iter() {
+                self.assign(node, assignment)?;
+            }
+        }
+        if let Some(ref delete_clause) = mutation.delete_clause.clone() {
+            for path_var in &delete_clause.targets {
+                self.delete(node, path_var)?;
+            }
+        }
+
+        Ok(())
     }
 
     fn apply_all(&mut self, node: Node, mutations: &[&Mutation]) -> Result<(), Error> {
