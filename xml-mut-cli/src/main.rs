@@ -1,13 +1,10 @@
 use crate::cli::MutCli;
 use clap::Parser;
-use itertools::Itertools;
-use roxmltree::*;
 use std::fs;
 use xml_mut_data::{Mutation, Statement};
-use xml_mut_impl::prelude::*;
 use xml_mut_parse::prelude::*;
+use xml_mut_xot::prelude::Valueable;
 use xot::Xot;
-use xml_mut_xot::prelude::{*, Fitable};
 
 mod cli;
 
@@ -37,43 +34,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    
-
     for xml_path in mut_cli.scan().iter() {
         let xml = fs::read_to_string(xml_path.clone())?;
         let mut xot = Xot::new();
         let root = xot.parse(xml.as_str())?;
         let doc_element_node = xot.document_element(root)?;
-        // xot.is_fit(doc_element_node,  );
-
-
-
-
-
-        // let doc: Document = Document::parse(xml.as_str())?;
-        // let replacers = &doc.get_replacers_all(mutations);
-
-        // match doc.apply(replacers) {
-        //     Ok(final_xml) => match fs::write(xml_path, final_xml) {
-        //         Ok(_) => println!("{:?} - updated with {} replaces", xml_path, replacers.len()),
-        //         Err(io_err) => println!(
-        //             "{:?} - updated with {} replaces, BUT failed writing to disk: {}",
-        //             xml_path,
-        //             replacers.len(),
-        //             io_err
-        //         ),
-        //     },
-        //     Err(err) => match err {
-        //         ReplaceError::NoChange => println!("{:?} - no changes", xml_path),
-        //         ReplaceError::ReplacerOverlap(r1, r2) => println!(
-        //             "{:?} - replacer {:?} overlaps with replacer {:?}",
-        //             xml_path, r1, r2
-        //         ),
-        //         ReplaceError::GeneratedXmlInvalid(xml_err) => {
-        //             println!("{:?} - generated xml is invalid: {}", xml_path, xml_err)
-        //         }
-        //     },
-        // };
+        xot.apply_all(doc_element_node, mutations)?;
+        let mut xml_file = fs::File::open(xml_path.clone())?;
+        xot.write(root, &mut xml_file)?;
+        // TODO: count number of mutations applied
+        println!("{:?} - updated", xml_path);
     }
 
     Ok(())

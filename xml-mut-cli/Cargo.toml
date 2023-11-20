@@ -19,7 +19,6 @@ path = "src/main.rs"
 
 [dependencies]
 itertools = "0.12"
-roxmltree = "0.19.0"
 xot = { git = "https://github.com/tomuxmon/xot" }
 clap = { version = "4.1.8", features = ["derive"] }
 walkdir = "2.3.2"

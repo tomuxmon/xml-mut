@@ -1,8 +1,8 @@
-use roxmltree::Document;
 use std::fs;
 use xml_mut_data::{Mutation, Statement};
-use xml_mut_impl::prelude::DocumentExt;
 use xml_mut_parse::prelude::*;
+use xml_mut_xot::prelude::Valueable;
+use xot::Xot;
 
 fn with_input_expect_xml_mutation_output(
     xml_input_path: &str,
@@ -10,7 +10,8 @@ fn with_input_expect_xml_mutation_output(
     xml_output_path: &str,
 ) {
     let xml_string = fs::read_to_string(xml_input_path).expect("xml file should exist");
-    let xml_doc = Document::parse(xml_string.as_str()).expect("should be avalid xml");
+
+    // let xml_doc = Document::parse(xml_string.as_str()).expect("should be avalid xml");
 
     let xml_expected_string =
         fs::read_to_string(xml_output_path).expect("xml output file should exist");
@@ -32,10 +33,16 @@ fn with_input_expect_xml_mutation_output(
         })
         .collect::<Vec<&Mutation>>();
 
-    let replacers = &xml_doc.get_replacers_all(mutations);
-    let xml_new_string = xml_doc
-        .apply(replacers)
+    let mut xot = Xot::new();
+    let root = xot
+        .parse(xml_string.as_str())
+        .expect("should be avalid xml");
+    let doc_element_node = xot
+        .document_element(root)
+        .expect("should contain root element");
+    xot.apply_all(doc_element_node, mutations)
         .expect("apply should not fail");
+    let xml_new_string = xot.to_string(root).expect("apply should not fail");
 
     // fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
 

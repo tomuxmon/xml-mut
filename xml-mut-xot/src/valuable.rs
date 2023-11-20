@@ -89,7 +89,7 @@ impl Valueable for Xot {
             }
         }
 
-        todo!()
+        Ok(())
     }
 
     fn add_sub_tree(&mut self, node: Node, path: &ValuePath, value: String) -> Result<(), Error> {
