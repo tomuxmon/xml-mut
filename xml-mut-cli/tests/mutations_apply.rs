@@ -47,7 +47,7 @@ fn with_input_expect_xml_mutation_output(
 
     let xml_new_string = xot.to_string(root).expect("apply should not fail");
 
-    fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
+    //fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
 
     assert_eq!(xml_expected_string, xml_new_string);
 }
