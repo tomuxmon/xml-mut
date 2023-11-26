@@ -11,8 +11,6 @@ fn with_input_expect_xml_mutation_output(
 ) {
     let xml_string = fs::read_to_string(xml_input_path).expect("xml file should exist");
 
-    // let xml_doc = Document::parse(xml_string.as_str()).expect("should be avalid xml");
-
     let xml_expected_string =
         fs::read_to_string(xml_output_path).expect("xml output file should exist");
 
@@ -40,11 +38,16 @@ fn with_input_expect_xml_mutation_output(
     let doc_element_node = xot
         .document_element(root)
         .expect("should contain root element");
-    xot.apply_all(doc_element_node, mutations)
-        .expect("apply should not fail");
+
+    let ops = xot
+        .get_operations_all(doc_element_node, mutations)
+        .expect("get operations should not fail");
+
+    xot.apply_all(&ops).expect("apply should not fail");
+
     let xml_new_string = xot.to_string(root).expect("apply should not fail");
 
-    // fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
+    fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
 
     assert_eq!(xml_expected_string, xml_new_string);
 }
