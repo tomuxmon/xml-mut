@@ -1,4 +1,7 @@
-use crate::prelude::{Error, Fitable, NodeExtensions};
+use crate::{
+    operation::*,
+    prelude::{Error, Fitable, NodeExtensions},
+};
 use xml_mut_data::{
     Mutation, PathVariant, ValueAssignment, ValuePath, ValueSelector, ValueVariant,
 };
@@ -295,64 +298,4 @@ impl Valueable for Xot {
         }
         Ok(())
     }
-}
-
-pub enum Operation {
-    AddSubTree(OpAddSubTree),
-    SetAttribute(OpSetAttribute),
-    RemoveAttribute(OpRemoveAttribute),
-    SetText(OpSetText),
-    PrependText(OpPrependText),
-    SetTextAfter(OpSetTextAfter),
-    SetName(OpSetName),
-    DeleteNode(OpDeleteNode),
-}
-
-pub struct OpAddSubTree {
-    pub node: Node,
-    node_path: Vec<String>,
-    sub_op: SubOperation,
-}
-
-pub enum SubOperation {
-    None,
-    /// Name and value of the attribute to be added
-    AddAttribute(String, String),
-    /// Value of the text to be added
-    AddText(String),
-    /// Value of the tail text to be inserted after
-    AddTailText(String),
-}
-
-pub struct OpSetAttribute {
-    node: Node,
-    name: String,
-    value: String,
-}
-pub struct OpRemoveAttribute {
-    node: Node,
-    name: String,
-}
-pub struct OpSetText {
-    node: Node,
-    value: String,
-}
-
-pub struct OpPrependText {
-    node: Node,
-    value: String,
-}
-
-pub struct OpSetTextAfter {
-    node: Node,
-    value: String,
-}
-
-pub struct OpSetName {
-    node: Node,
-    name: String,
-}
-
-pub struct OpDeleteNode {
-    node: Node,
 }
