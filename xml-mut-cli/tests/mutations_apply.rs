@@ -53,6 +53,15 @@ fn with_input_expect_xml_mutation_output(
 }
 
 #[test]
+fn delete_with_preserve_mutation() {
+    with_input_expect_xml_mutation_output(
+        "tests/delete_with_preserve/in.xml",
+        "tests/delete_with_preserve/mut.xmlmut",
+        "tests/delete_with_preserve/out.xml",
+    );
+}
+
+#[test]
 fn package_ref_version_mutation() {
     with_input_expect_xml_mutation_output(
         "tests/package_ref_version/in.xml",
