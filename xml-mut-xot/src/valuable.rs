@@ -285,7 +285,11 @@ impl Valueable for Xot {
                 element.set_name(name_id);
             }
             Operation::DeleteNode(op) => {
+                let parent = self.parent(op.node);
                 self.remove(op.node).map_err(Error::XotError)?;
+                if let Some(node) = parent {
+                    self.remove_insignificant_whitespace(node);
+                }
             }
         }
 
