@@ -1,9 +1,0 @@
-[package]
-name = "xml-mut-impl"
-version = "0.0.0"
-authors = ["Tomas Dambrauskas <tomas.sql@proton.me>"]
-edition = "2021"
-
-[dependencies]
-roxmltree = "0.19.0"
-xml-mut-data = { path = "../xml-mut-data" }

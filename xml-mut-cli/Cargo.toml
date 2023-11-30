@@ -20,9 +20,8 @@ path = "src/main.rs"
 [dependencies]
 itertools = "0.12"
 xot = { git = "https://github.com/tomuxmon/xot" }
-clap = { version = "4.1.8", features = ["derive"] }
-walkdir = "2.3.2"
+clap = { version = "4.4.10", features = ["derive"] }
+walkdir = "2.4.0"
 xml-mut-data = { path = "../xml-mut-data" }
 xml-mut-parse = { path = "../xml-mut-parse" }
-xml-mut-impl = { path = "../xml-mut-impl" }
 xml-mut-xot = { path = "../xml-mut-xot" }
