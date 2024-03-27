@@ -41,7 +41,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let doc_element_node = xot.document_element(root)?;
         xot.get_operations_all(doc_element_node, mutations)?;
         let mut xml_file = fs::File::open(xml_path.clone())?;
-        xot.write(root, &mut xml_file)?;
+        xot.serialize_xml_write(Default::default(), root, &mut xml_file)?;
         // TODO: count number of mutations applied
         println!("{:?} - updated", xml_path);
     }
