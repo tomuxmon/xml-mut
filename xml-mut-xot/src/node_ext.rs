@@ -6,8 +6,6 @@ pub trait NodeExtensions {
     fn text_node(&self, node: Node) -> Option<Node>;
     fn is_element_with_name(&self, node: Node, name: &str) -> bool;
     fn find_parent_elemnt(&self, node: Node, node_path: &[&str]) -> Option<Node>;
-    // TODO: node_path_exists(Node, &[&str])
-    // TODO: iter_children(Node, &[&str])
     fn find_first_child_element(&self, node: Node, node_path: &[&str]) -> Option<Node>;
     /// Returns the name without a namespace if it is an element
     fn get_name(&self, node: Node) -> Option<&str>;
