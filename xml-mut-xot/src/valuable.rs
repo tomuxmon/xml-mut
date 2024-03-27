@@ -240,13 +240,11 @@ impl Valueable for Xot {
                 match &op.sub_op {
                     SubOperation::None => (),
                     SubOperation::AddAttribute(name, value) => {
-                        let attribute_name = self.add_name(name.as_str());
-                        let mut attributes = self.attributes_mut(node);
-                        if let Some(val) = attributes.get_mut(attribute_name) {
-                            *val = value.clone();
-                        } else {
-                            attributes.insert(attribute_name, value.clone());
-                        }
+                        let name_id = self.add_name(name.as_str());
+                        *self
+                            .attributes_mut(node)
+                            .entry(name_id)
+                            .or_insert(value.clone()) = value.clone();
                     }
                     SubOperation::AddText(value) => {
                         self.append_text(node, value.as_str())
@@ -261,12 +259,10 @@ impl Valueable for Xot {
             }
             Operation::SetAttribute(op) => {
                 let name_id = self.add_name(op.name.as_str());
-                let mut attributes = self.attributes_mut(op.node);
-                if let Some(val) = attributes.get_mut(name_id) {
-                    *val = op.value.clone();
-                } else {
-                    attributes.insert(name_id, op.value.clone());
-                }
+                *self
+                    .attributes_mut(op.node)
+                    .entry(name_id)
+                    .or_insert(op.value.clone()) = op.value.clone();
             }
             Operation::RemoveAttribute(op) => {
                 let name_id = self
