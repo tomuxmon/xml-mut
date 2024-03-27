@@ -6,14 +6,10 @@ pub enum Error {
     NameNotFound(String),
     NotAnElement,
     NotATextNode,
-    TextNodeNotFound,
-    TailTextNodeNotFound,
     DeleteNameIsInvalid,
     XotError(xot::Error),
     AssignmentSourceValueNotFound(String),
-    ElementNotFound,
     NothingToAdd,
-    ParentNotFound,
 }
 
 impl std::error::Error for Error {
@@ -33,8 +29,6 @@ impl fmt::Display for Error {
             }
             Error::NotAnElement => write!(f, "The node is not an element."),
             Error::NotATextNode => write!(f, "The node is not a text node."),
-            Error::TextNodeNotFound => write!(f, "Failed to find text node."),
-            Error::TailTextNodeNotFound => write!(f, "Failed to find tail text node."),
             Error::DeleteNameIsInvalid => write!(f, "The delete name is invalid."),
             Error::XotError(err) => write!(f, "Xot error: {}", err),
             Error::AssignmentSourceValueNotFound(name) => {
@@ -44,9 +38,7 @@ impl fmt::Display for Error {
                     name
                 )
             }
-            Error::ElementNotFound => write!(f, "Failed to find element."),
             Error::NothingToAdd => write!(f, "There is nothing to add."),
-            Error::ParentNotFound => write!(f, "Failed to find parent."),
         }
     }
 }
