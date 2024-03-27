@@ -33,7 +33,7 @@ pub trait Valueable {
 impl Valueable for Xot {
     fn get_value(&self, node: Node, selector: &ValueSelector) -> Option<&str> {
         match selector {
-            ValueSelector::Attribute(name) => self.element(node)?.get_attribute(self.name(name)?),
+            ValueSelector::Attribute(name) => Some(self.attributes(node).get(self.name(name)?)?),
             ValueSelector::Text => self.first_child(node).and_then(|t| self.text_str(t)),
             ValueSelector::Tail => self.next_sibling(node).and_then(|t| self.text_str(t)),
             ValueSelector::Name => self.get_name(node),
@@ -241,8 +241,12 @@ impl Valueable for Xot {
                     SubOperation::None => (),
                     SubOperation::AddAttribute(name, value) => {
                         let attribute_name = self.add_name(name.as_str());
-                        let element = self.element_mut(node).unwrap();
-                        element.set_attribute(attribute_name, value);
+                        let mut attributes = self.attributes_mut(node);
+                        if let Some(val) = attributes.get_mut(attribute_name) {
+                            *val = value.clone();
+                        } else {
+                            attributes.insert(attribute_name, value.clone());
+                        }
                     }
                     SubOperation::AddText(value) => {
                         self.append_text(node, value.as_str())
@@ -257,15 +261,18 @@ impl Valueable for Xot {
             }
             Operation::SetAttribute(op) => {
                 let name_id = self.add_name(op.name.as_str());
-                let element = self.element_mut(op.node).ok_or(Error::NotAnElement)?;
-                element.set_attribute(name_id, op.value.clone())
+                let mut attributes = self.attributes_mut(op.node);
+                if let Some(val) = attributes.get_mut(name_id) {
+                    *val = op.value.clone();
+                } else {
+                    attributes.insert(name_id, op.value.clone());
+                }
             }
             Operation::RemoveAttribute(op) => {
                 let name_id = self
                     .name(op.name.as_str())
                     .ok_or(Error::NameNotFound(op.name.clone()))?;
-                let element = self.element_mut(op.node).ok_or(Error::NotAnElement)?;
-                element.remove_attribute(name_id);
+                self.attributes_mut(op.node).remove(name_id);
             }
             Operation::SetText(op) => {
                 let text = self.text_mut(op.node).ok_or(Error::NotATextNode)?;

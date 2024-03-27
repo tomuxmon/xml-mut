@@ -8,7 +8,6 @@ mod valuable;
 pub mod prelude {
     pub use super::errors::*;
     pub use super::fitable::*;
-    pub use super::macros::*;
     pub use super::node_ext::*;
     pub use super::operation::*;
     pub use super::valuable::*;

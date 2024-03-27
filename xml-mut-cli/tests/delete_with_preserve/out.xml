@@ -1,7 +1,6 @@
 <root>
   <!-- Top xml processing instruction lost https://github.com/faassen/xot/issues/8 -->
-  <!-- Original attribute order is not preserved https://github.com/faassen/xot/issues/9  -->
-  <data xml:space="preserve" name="some">
+  <data name="some" xml:space="preserve">
       
   </data>
 </root>

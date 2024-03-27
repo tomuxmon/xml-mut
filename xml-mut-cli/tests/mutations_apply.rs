@@ -2,7 +2,6 @@ use std::fs;
 use xml_mut_data::{Mutation, Statement};
 use xml_mut_parse::prelude::*;
 use xml_mut_xot::prelude::Valueable;
-use xot::Xot;
 
 fn with_input_expect_xml_mutation_output(
     xml_input_path: &str,
@@ -31,10 +30,8 @@ fn with_input_expect_xml_mutation_output(
         })
         .collect::<Vec<&Mutation>>();
 
-    let mut xot = Xot::new();
-    let root = xot
-        .parse(xml_string.as_str())
-        .expect("should be avalid xml");
+    let mut xot = xot::Xot::new();
+    let root = xot.parse(&xml_string).expect("should be a valid xml");
     let doc_element_node = xot
         .document_element(root)
         .expect("should contain root element");
