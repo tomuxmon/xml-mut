@@ -34,13 +34,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
+    println!("{} mutation(s) to be applied.", mutations.len());
     for xml_path in mut_cli.scan().iter() {
         let xml = fs::read_to_string(xml_path.clone())?;
         let mut xot = Xot::new();
         let root = xot.parse(xml.as_str())?;
         let doc_element_node = xot.document_element(root)?;
-        xot.get_operations_all(doc_element_node, mutations)?;
-        let mut xml_file = fs::File::open(xml_path.clone())?;
+        let ops = xot.get_operations_all(doc_element_node, mutations)?;
+        println!("{} operation(s) to be applied for {:?}", ops.len(), xml_path);
+        xot.apply_all(&ops)?;
+        let mut xml_file = fs::File::create(xml_path)?;
         xot.serialize_xml_write(Default::default(), root, &mut xml_file)?;
         // TODO: count number of mutations applied
         println!("{:?} - updated", xml_path);

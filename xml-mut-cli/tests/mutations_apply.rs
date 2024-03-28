@@ -77,6 +77,15 @@ fn package_ref_to_project_ref_mutation() {
 }
 
 #[test]
+fn package_ref_to_project_ref_sub_node_mutation() {
+    with_input_expect_xml_mutation_output(
+        "tests/package_ref_to_project_ref_sub_node/in.xml",
+        "tests/package_ref_to_project_ref_sub_node/mut.xmlmut",
+        "tests/package_ref_to_project_ref_sub_node/out.xml",
+    );
+}
+
+#[test]
 fn set_text_sub_node_exists_mutation() {
     with_input_expect_xml_mutation_output(
         "tests/set_text_sub_node_exists/in.xml",
