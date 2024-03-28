@@ -463,11 +463,11 @@ xml-mut ~/pref-version-fix.xmlmut scan -e csproj -e fsproj ~/code
 
 ## Architexture
 
-There are 4 crates so far. [xml-mut-data](xml-mut-data/) - is where all data structures of the XML mutation language reside. [xml-mut-parse](xml-mut-parse/) crate uses [nom](https://github.com/rust-bakery/nom) to parse XML mutation definition. [xml-mut-impl](xml-mut-impl/) uses [roxmltree](https://github.com/RazrFalcon/roxmltree) (read-only XML tree) and extends it to be able to process XML with mutation definitions. [xml-mut-cli](xml-mut-cli/) uses [clap](https://github.com/clap-rs/clap) to combine both XML mutation parsing and read-only XML extensions to process XML with mutation definitions. All of this is just in a proof of concept stage and will likely change in the future.
+There are 4 crates so far. [xml-mut-data](xml-mut-data/) - is where all data structures of the XML mutation language reside. [xml-mut-parse](xml-mut-parse/) crate uses [nom](https://github.com/rust-bakery/nom) to parse XML mutation definition. [xml-mut-xot](xml-mut-xot/) uses [xot](https://github.com/faassen/xot) (XML Object Tree) and extends it to be able to process XML with mutation definitions. [xml-mut-cli](xml-mut-cli/) uses [clap](https://github.com/clap-rs/clap) to combine both XML mutation parsing and read-only XML extensions to process XML with mutation definitions. All of this is just in a proof of concept stage and will likely change in the future.
 
 ## Is it stable
 
-it is still version `0.0.0`. But you can try it out and report any issues you had.
+it is still version `0.1.0`. But it is as stable as [xot](https://github.com/faassen/xot) is regarding producing valid xml.
 
 ## But tell me why
 

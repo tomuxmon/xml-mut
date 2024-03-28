@@ -1,6 +1,6 @@
 [package]
 name = "xml-mut-cli"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Tomas Dambrauskas <tomas.sql@proton.me>"]
 description = """
 A simple XML mutation definition language resembling SQL. 
