@@ -1,6 +1,6 @@
 [package]
 name = "xml-mut-parse"
-version = "0.0.0"
+version = "0.1.0"
 authors = ["Tomas Dambrauskas <tomas.sql@proton.me>"]
 edition = "2021"
 

@@ -1,8 +1,7 @@
-use roxmltree::Document;
 use std::fs;
 use xml_mut_data::{Mutation, Statement};
-use xml_mut_impl::prelude::DocumentExt;
 use xml_mut_parse::prelude::*;
+use xml_mut_xot::prelude::Valueable;
 
 fn with_input_expect_xml_mutation_output(
     xml_input_path: &str,
@@ -10,7 +9,6 @@ fn with_input_expect_xml_mutation_output(
     xml_output_path: &str,
 ) {
     let xml_string = fs::read_to_string(xml_input_path).expect("xml file should exist");
-    let xml_doc = Document::parse(xml_string.as_str()).expect("should be avalid xml");
 
     let xml_expected_string =
         fs::read_to_string(xml_output_path).expect("xml output file should exist");
@@ -32,14 +30,32 @@ fn with_input_expect_xml_mutation_output(
         })
         .collect::<Vec<&Mutation>>();
 
-    let replacers = &xml_doc.get_replacers_all(mutations);
-    let xml_new_string = xml_doc
-        .apply(replacers)
-        .expect("apply should not fail");
+    let mut xot = xot::Xot::new();
+    let root = xot.parse(&xml_string).expect("should be a valid xml");
+    let doc_element_node = xot
+        .document_element(root)
+        .expect("should contain root element");
 
-    // fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
+    let ops = xot
+        .get_operations_all(doc_element_node, mutations)
+        .expect("get operations should not fail");
+
+    xot.apply_all(&ops).expect("apply should not fail");
+
+    let xml_new_string = xot.to_string(root).expect("apply should not fail");
+
+    //fs::write(xml_output_path, xml_new_string.clone()).expect("nu nesamone");
 
     assert_eq!(xml_expected_string, xml_new_string);
+}
+
+#[test]
+fn delete_with_preserve_mutation() {
+    with_input_expect_xml_mutation_output(
+        "tests/delete_with_preserve/in.xml",
+        "tests/delete_with_preserve/mut.xmlmut",
+        "tests/delete_with_preserve/out.xml",
+    );
 }
 
 #[test]
@@ -57,6 +73,15 @@ fn package_ref_to_project_ref_mutation() {
         "tests/package_ref_to_project_ref/in.xml",
         "tests/package_ref_to_project_ref/mut.xmlmut",
         "tests/package_ref_to_project_ref/out.xml",
+    );
+}
+
+#[test]
+fn package_ref_to_project_ref_sub_node_mutation() {
+    with_input_expect_xml_mutation_output(
+        "tests/package_ref_to_project_ref_sub_node/in.xml",
+        "tests/package_ref_to_project_ref_sub_node/mut.xmlmut",
+        "tests/package_ref_to_project_ref_sub_node/out.xml",
     );
 }
 

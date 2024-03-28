@@ -1,0 +1,6 @@
+<root>
+  <!-- xml declaration lost https://github.com/faassen/xot/issues/8 -->
+  <data name="some" xml:space="preserve">
+      
+  </data>
+</root>

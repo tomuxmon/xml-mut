@@ -1,0 +1,8 @@
+GET Project/ItemGroup/PackageReference
+WHERE [@Include] == "Amazing.CodeAnalyzer"
+SET [name] = "ProjectReference",
+    [@Include] = "path/to/project.csproj",
+    [@PrivateAssets] = "all",
+    [@ReferenceOutputAssembly] = "false",
+    [@OutputItemType] = "Analyzer"
+DELETE [@Version]
