@@ -58,11 +58,11 @@ Details are in the [cli docs](cli.md).
 
 ## Architexture
 
-There are 4 crates so far. [xml-mut-data](xml-mut-data/) - is where all data structures of the XML mutation language reside. [xml-mut-parse](xml-mut-parse/) crate uses [nom](https://github.com/rust-bakery/nom) to parse XML mutation definition. [xml-mut-xot](xml-mut-xot/) uses [xot](https://github.com/faassen/xot) (XML Object Tree) and extends it to be able to process XML with mutation definitions. [xml-mut-cli](xml-mut-cli/) uses [clap](https://github.com/clap-rs/clap) to combine both XML mutation parsing and read-only XML extensions to process XML with mutation definitions. All of this is just in a proof of concept stage and will likely change in the future.
+There are 4 crates so far. [xml-mut-data](xml-mut-data/) - is where all data structures of the XML mutation language reside. [xml-mut-parse](xml-mut-parse/) crate uses [nom](https://github.com/rust-bakery/nom) to parse XML mutation definition. [xml-mut-xot](xml-mut-xot/) uses [xot](https://github.com/faassen/xot) (XML Object Tree) and extends it to be able to process XML with mutation definitions. [xml-mut-cli](xml-mut-cli/) uses [clap](https://github.com/clap-rs/clap) to combine both XML mutation parsing and xot extensions to process XML with mutation definitions.
 
 ## Is it stable
 
-it is still version `0.1.0`. But it is as stable as [xot](https://github.com/faassen/xot) is regarding producing valid xml.
+It is as stable as [xot](https://github.com/faassen/xot) is regarding producing valid xml. Worth noting that [xml declaration will be lost](xml-mut-cli/tests/delete_with_preserve/in.xml) in a process of transformation and some white space inside xml tag will be removed.
 
 ## But tell me why
 
