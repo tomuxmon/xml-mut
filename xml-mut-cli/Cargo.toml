@@ -18,8 +18,8 @@ name = "xml-mut"
 path = "src/main.rs"
 
 [dependencies]
-itertools = "0.12.1"
-xot = "0.23.0"
+itertools = "0.13.0"
+xot = "0.24.0"
 clap = { version = "4.5.4", features = ["derive"] }
 walkdir = "2.5.0"
 xml-mut-data = { path = "../xml-mut-data" }

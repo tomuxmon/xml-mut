@@ -5,5 +5,5 @@ authors = ["Tomas Dambrauskas <tomas.sql@proton.me>"]
 edition = "2021"
 
 [dependencies]
-xot = "0.23.0"
+xot = "0.24.0"
 xml-mut-data = { path = "../xml-mut-data" }
