@@ -41,12 +41,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let root = xot.parse(xml.as_str())?;
         let doc_element_node = xot.document_element(root)?;
         let ops = xot.get_operations_all(doc_element_node, mutations)?;
-        println!("{} operation(s) to be applied for {:?}", ops.len(), xml_path);
-        xot.apply_all(&ops)?;
-        let mut xml_file = fs::File::create(xml_path)?;
-        xot.serialize_xml_write(Default::default(), root, &mut xml_file)?;
-        // TODO: count number of mutations applied
-        println!("{:?} - updated", xml_path);
+
+        if !ops.is_empty() {
+            println!(
+                "{} operation(s) to be applied for {:?}",
+                ops.len(),
+                xml_path
+            );
+            xot.apply_all(&ops)?;
+            let mut xml_file = fs::File::create(xml_path)?;
+            xot.serialize_xml_write(Default::default(), root, &mut xml_file)?;
+            // TODO: count number of mutations applied
+            println!("{:?} - updated", xml_path);
+        }
     }
 
     Ok(())
