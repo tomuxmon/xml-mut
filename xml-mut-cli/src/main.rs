@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for xml_path in mut_cli.scan().iter() {
         let xml = fs::read_to_string(xml_path.clone())?;
         let mut xot = Xot::new();
-        let root = xot.parse(xml.as_str())?;
+        let root = xot.parse(xml.as_str()).map_err(xot::Error::from)?;
         let doc_element_node = xot.document_element(root)?;
         let ops = xot.get_operations_all(doc_element_node, mutations)?;
 

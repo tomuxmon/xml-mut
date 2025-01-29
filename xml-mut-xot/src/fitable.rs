@@ -35,7 +35,7 @@ impl Fitable for Xot {
         match value_source {
             ValueSelector::Attribute(name) => {
                 let name_id = ok_or_return_false!(self.name(name));
-                return self.attributes(node).contains_key(name_id);
+                self.attributes(node).contains_key(name_id)
             }
             ValueSelector::Text => {
                 let child = ok_or_return_false!(self.first_child(node));

@@ -10,7 +10,7 @@ use xot::{Node, Xot};
 pub trait Valueable {
     fn get_value(&self, node: Node, selector: &ValueSelector) -> Option<&str>;
     fn get_child_value(&self, node: Node, path: &ValuePath) -> Option<&str>;
-    fn get_value_of<'a>(&'a self, node: Node, variant: &'a ValueVariant) -> Option<&str> {
+    fn get_value_of<'a>(&'a self, node: Node, variant: &'a ValueVariant) -> Option<&'a str> {
         match variant {
             ValueVariant::Selector(path) => self.get_child_value(node, path),
             ValueVariant::LiteralString(val) => Some(val),
