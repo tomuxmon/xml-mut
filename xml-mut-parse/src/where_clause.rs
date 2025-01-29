@@ -4,7 +4,7 @@ use nom::{
     character::complete::multispace1,
     combinator::opt,
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 use xml_mut_data::{
     NodePath, PathVariant, Predicate, PredicateEquals, PredicateExists, ValuePath, ValueSelector,
@@ -13,7 +13,7 @@ use xml_mut_data::{
 
 pub fn value_source(s: &str) -> IResult<&str, ValueSelector> {
     let (s, _) = tag("[")(s)?;
-    let (s, at) = opt(tag("@"))(s)?;
+    let (s, at) = opt(tag("@")).parse(s)?;
     let (s, name) = take_till(|c: char| c == ']')(s)?;
     let (s, _) = tag("]")(s)?;
 
@@ -35,7 +35,7 @@ pub fn value_source(s: &str) -> IResult<&str, ValueSelector> {
 }
 
 pub fn value_path(s: &str) -> IResult<&str, ValuePath> {
-    let (s, node_path) = opt(node_path)(s)?;
+    let (s, node_path) = opt(node_path).parse(s)?;
     let (s, source) = value_source(s)?;
     Ok(if let Some(node_path) = node_path {
         (
@@ -58,7 +58,7 @@ pub fn value_path(s: &str) -> IResult<&str, ValuePath> {
 
 // TODO: non desttructive parse of node path or value selector
 pub fn path_variant(s: &str) -> IResult<&str, PathVariant> {
-    let (s, value) = opt(value_path)(s)?;
+    let (s, value) = opt(value_path).parse(s)?;
     if let Some(value) = value {
         Ok((s, PathVariant::Value(value)))
     } else {
@@ -92,7 +92,7 @@ pub fn predicate_equals(s: &str) -> IResult<&str, PredicateEquals> {
 }
 
 pub fn predicate(s: &str) -> IResult<&str, Predicate> {
-    let (s, maybe_p_node_exists) = opt(predicate_node_exists)(s)?;
+    let (s, maybe_p_node_exists) = opt(predicate_node_exists).parse(s)?;
 
     Ok(if let Some(p_node_exists) = maybe_p_node_exists {
         (s, Predicate::Exists(p_node_exists))
@@ -113,7 +113,7 @@ fn and_surounded_mulispace1(s: &str) -> IResult<&str, &str> {
 pub fn where_clause(s: &str) -> IResult<&str, WhereClause> {
     let (s, where_word) = tag_no_case("where")(s)?;
     let (s, _) = multispace1(s)?;
-    let (s, predicates) = separated_list1(and_surounded_mulispace1, predicate)(s)?;
+    let (s, predicates) = separated_list1(and_surounded_mulispace1, predicate).parse(s)?;
 
     Ok((
         s,

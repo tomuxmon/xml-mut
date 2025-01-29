@@ -2,7 +2,7 @@ use nom::{
     bytes::complete::{tag, tag_no_case, take_while1},
     character::complete::multispace1,
     multi::separated_list1,
-    IResult,
+    IResult, Parser,
 };
 use xml_mut_data::{GetClause, NodePath};
 
@@ -13,7 +13,7 @@ pub fn is_valid_in_xml_node_name(s: char) -> bool {
 }
 
 pub fn node_path(s: &str) -> IResult<&str, NodePath> {
-    let (s, path) = separated_list1(tag("/"), take_while1(is_valid_in_xml_node_name))(s)?;
+    let (s, path) = separated_list1(tag("/"), take_while1(is_valid_in_xml_node_name)).parse(s)?;
     Ok((s, NodePath { path }))
 }
 

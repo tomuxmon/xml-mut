@@ -5,17 +5,17 @@ use nom::{
     combinator::opt,
     multi::separated_list1,
     sequence::delimited,
-    IResult,
+    IResult, Parser,
 };
 use xml_mut_data::{SetClause, ValueAssignment, ValueVariant};
 
 pub fn literal_quoted_string(s: &str) -> IResult<&str, &str> {
-    let (s, res) = delimited(char('\"'), take_till(|c| c == '\"'), char('\"'))(s)?;
+    let (s, res) = delimited(char('\"'), take_till(|c| c == '\"'), char('\"')).parse(s)?;
     Ok((s, res))
 }
 
 pub fn value_variant(s: &str) -> IResult<&str, ValueVariant> {
-    let (s, maybe_p_node_exists) = opt(value_path)(s)?;
+    let (s, maybe_p_node_exists) = opt(value_path).parse(s)?;
     Ok(if let Some(p_node_exists) = maybe_p_node_exists {
         (s, ValueVariant::Selector(p_node_exists))
     } else {
@@ -44,7 +44,8 @@ pub fn comma_surounded_mulispace01(s: &str) -> IResult<&str, &str> {
 pub fn set_clause(s: &str) -> IResult<&str, SetClause> {
     let (s, set_word) = tag_no_case("set")(s)?;
     let (s, _) = multispace1(s)?;
-    let (s, assignments) = separated_list1(comma_surounded_mulispace01, value_assignment)(s)?;
+    let (s, assignments) =
+        separated_list1(comma_surounded_mulispace01, value_assignment).parse(s)?;
     Ok((
         s,
         SetClause {
